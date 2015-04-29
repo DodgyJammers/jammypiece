@@ -51,8 +51,8 @@ public class MidiOut implements Consumer<MidiEvent>
     }
 
     // Play a different instrument.
-    Instrument lInstrument = lLoadedInstruments[55];
-    mSynth.getChannels()[0].programChange(lInstrument.getPatch().getBank(), lInstrument.getPatch().getProgram());
+    // Instrument lInstrument = lLoadedInstruments[55];
+    // mSynth.getChannels()[0].programChange(lInstrument.getPatch().getBank(), lInstrument.getPatch().getProgram());
     // mReceiver.send(new ShortMessage(ShortMessage.PROGRAM_CHANGE, 0, 109, 0), -1);
 
     // Register as a consumer of events.

@@ -33,7 +33,7 @@ public abstract class Distributor<T> implements Producer<T>
    */
   protected void distribute(T xiItem)
   {
-    LOGGER.debug("Distributing " + xiItem);
+    LOGGER.trace("Distributing " + xiItem);
     for (Consumer<T> lConsumer : mConsumers)
     {
       lConsumer.consume(xiItem);

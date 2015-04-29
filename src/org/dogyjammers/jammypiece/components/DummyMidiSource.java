@@ -24,38 +24,42 @@ public class DummyMidiSource extends Distributor<MidiEvent> implements Runnable
     LOGGER.info("Creating DummyMidiSource");
     mWorker = new Thread(this, "DummyMidiSource");
     mWorker.setDaemon(true);
+  }
+
+  public void start()
+  {
     mWorker.start();
   }
 
   @Override
   public void run()
   {
-    int[] lNotes = {60, 64, 67};
-    int lNote = 0;
-
     LOGGER.info("Starting DummyMidiSource");
+
     try
     {
+      MidiEvent[] lEvents = {new MidiEvent(new ShortMessage(ShortMessage.NOTE_ON,  0, 60, 40), -1),
+                             new MidiEvent(new ShortMessage(ShortMessage.NOTE_OFF, 0, 60, 40), -1),
+                             new MidiEvent(new ShortMessage(ShortMessage.NOTE_ON,  0, 64, 40), -1),
+                             new MidiEvent(new ShortMessage(ShortMessage.NOTE_OFF, 0, 64, 40), -1),
+                             new MidiEvent(new ShortMessage(ShortMessage.NOTE_ON,  0, 67, 40), -1),
+                             new MidiEvent(new ShortMessage(ShortMessage.NOTE_OFF, 0, 67, 40), -1)};
+
+      int lEvent = 0;
       boolean lPlaying = false;
 
       while (true)
       {
-        Thread.sleep(1000);
-        distribute(new MidiEvent(new ShortMessage(lPlaying ? ShortMessage.NOTE_OFF : ShortMessage.NOTE_ON,
-                                                  0,
-                                                  lNotes[lNote],
-                                                  40), -1));
+        distribute(lEvents[lEvent]);
+        lEvent = (lEvent + 1) % lEvents.length;
+
         lPlaying = !lPlaying;
-        if (!lPlaying)
-        {
-          lNote = (lNote + 1) % lNotes.length;
-        }
+        Thread.sleep(lPlaying ? 500 : 100, 0);
       }
     }
     catch (Exception lEx)
     {
-      System.err.println("MidiIn died");
-      lEx.printStackTrace();
+      LOGGER.error("MidiIn died", lEx);
     }
   }
 }
