@@ -2,27 +2,27 @@ package org.dogyjammers.jammypiece.components;
 
 import javax.sound.midi.MidiEvent;
 
-import org.dogyjammers.jammypiece.events.KeyChangeEvent;
+import org.dogyjammers.jammypiece.events.TempoChangeEvent;
 import org.dogyjammers.jammypiece.infra.Consumer;
 import org.dogyjammers.jammypiece.infra.Distributor;
 import org.dogyjammers.jammypiece.infra.Producer;
 
-public class KeyDetector extends Distributor<KeyChangeEvent> implements Consumer<MidiEvent>
+public class TempoDetector extends Distributor<TempoChangeEvent> implements Consumer<MidiEvent>
 {
-  private KeyChangeEvent mKey = null;
+  private TempoChangeEvent mTempo = null;
 
-  public KeyDetector(Producer<MidiEvent> xiMelodySource)
+  public TempoDetector(Producer<MidiEvent> xiMelodySource)
   {
     xiMelodySource.registerConsumer(this);
   }
 
   @Override
-  public void registerConsumer(Consumer<KeyChangeEvent> xiConsumer)
+  public void registerConsumer(Consumer<TempoChangeEvent> xiConsumer)
   {
     super.registerConsumer(xiConsumer);
 
     // Immediately tell new consumers what the current key is.
-    xiConsumer.consume(mKey);
+    xiConsumer.consume(mTempo);
   }
 
   @Override

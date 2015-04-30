@@ -8,14 +8,14 @@ import org.dogyjammers.jammypiece.infra.Consumer;
 import org.dogyjammers.jammypiece.infra.Distributor;
 import org.dogyjammers.jammypiece.infra.Producer;
 
-public class MelodyAdjuster extends Distributor<MidiEvent> implements Consumer<MidiEvent>
+public class Harmoniser extends Distributor<MidiEvent> implements Consumer<MidiEvent>
 {
   private final ChordListener mChordListener;
   private final MetronomeListener mMetronomeListener;
 
-  public MelodyAdjuster(Producer<MidiEvent> xiMelodySource,
-                        Producer<ChordChangeEvent> xiChordSource,
-                        Producer<TickEvent> xiMetronome)
+  public Harmoniser(Producer<MidiEvent> xiMelodySource,
+                    Producer<ChordChangeEvent> xiChordSource,
+                    Producer<TickEvent> xiMetronome)
   {
     mChordListener = new ChordListener();
     mMetronomeListener = new MetronomeListener();
@@ -28,8 +28,7 @@ public class MelodyAdjuster extends Distributor<MidiEvent> implements Consumer<M
   @Override
   public void consume(MidiEvent xiItem)
   {
-    // Pass through melody events.
-    distribute(xiItem);
+    // Discard melody events.
   }
 
   private class ChordListener implements Consumer<ChordChangeEvent>

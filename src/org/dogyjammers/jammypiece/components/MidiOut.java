@@ -1,5 +1,7 @@
 package org.dogyjammers.jammypiece.components;
 
+import java.util.List;
+
 import javax.sound.midi.Instrument;
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiEvent;
@@ -30,7 +32,7 @@ public class MidiOut implements Consumer<MidiEvent>
    *
    * @throws MidiUnavailableException if the MIDI output device couldn't be opened.
    */
-  public MidiOut(Producer<MidiEvent> xiSource) throws MidiUnavailableException, InvalidMidiDataException
+  public MidiOut(List<Producer<MidiEvent>> xiSources) throws MidiUnavailableException, InvalidMidiDataException
   {
     mSynth = MidiSystem.getSynthesizer();
     mSynth.open();
@@ -55,8 +57,11 @@ public class MidiOut implements Consumer<MidiEvent>
     // mSynth.getChannels()[0].programChange(lInstrument.getPatch().getBank(), lInstrument.getPatch().getProgram());
     // mReceiver.send(new ShortMessage(ShortMessage.PROGRAM_CHANGE, 0, 109, 0), -1);
 
-    // Register as a consumer of events.
-    xiSource.registerConsumer(this);
+    // Register as a consumer of events from all sources.
+    for (Producer<MidiEvent> lSource : xiSources)
+    {
+      lSource.registerConsumer(this);
+    }
   }
 
   @Override

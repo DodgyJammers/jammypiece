@@ -1,9 +1,9 @@
 package org.dogyjammers.jammypiece.events;
 
 /**
- * Metronome tick.
+ * Chord change.
  */
-public class Tick
+public class ChordChangeEvent
 {
-  // Placeholder
+
 }
