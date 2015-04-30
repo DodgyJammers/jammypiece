@@ -18,10 +18,12 @@ import org.dogyjammers.jammypiece.components.MelodyAdjuster;
 import org.dogyjammers.jammypiece.components.Metronome;
 import org.dogyjammers.jammypiece.components.MidiOut;
 import org.dogyjammers.jammypiece.components.TempoDetector;
+import org.dogyjammers.jammypiece.components.TimeSignatureDetector;
 import org.dogyjammers.jammypiece.events.ChordChangeEvent;
 import org.dogyjammers.jammypiece.events.KeyChangeEvent;
 import org.dogyjammers.jammypiece.events.TempoChangeEvent;
 import org.dogyjammers.jammypiece.events.TickEvent;
+import org.dogyjammers.jammypiece.events.TimeSignatureChangeEvent;
 import org.dogyjammers.jammypiece.infra.Producer;
 
 /**
@@ -41,7 +43,8 @@ public class jammypiece
       Producer<MidiEvent> lInputSelector = new InputSelector(lSources);
       Producer<KeyChangeEvent> lKeyDetector = new KeyDetector(lInputSelector);
       Producer<TempoChangeEvent> lTempoDetector = new TempoDetector(lInputSelector);
-      Producer<TickEvent> lMetronome = new Metronome(lTempoDetector);
+      Producer<TimeSignatureChangeEvent> lTimeSigDetector = new TimeSignatureDetector(lInputSelector, lTempoDetector);
+      Producer<TickEvent> lMetronome = new Metronome(lTempoDetector, lTimeSigDetector);
       Producer<MidiEvent> lClicker = new Clicker(lMetronome);
       Producer<ChordChangeEvent> lChordSelector = new ChordSelector(lInputSelector, lKeyDetector, lMetronome);
       Producer<MidiEvent> lAdjuster = new MelodyAdjuster(lInputSelector, lChordSelector, lMetronome);
