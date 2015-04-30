@@ -2,17 +2,18 @@ package org.dogyjammers.jammypiece.components;
 
 import java.util.List;
 
-import javax.sound.midi.Instrument;
-import javax.sound.midi.InvalidMidiDataException;
+import javax.sound.midi.MidiDevice;
+import javax.sound.midi.MidiDevice.Info;
 import javax.sound.midi.MidiEvent;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.MidiUnavailableException;
 import javax.sound.midi.Receiver;
-import javax.sound.midi.Synthesizer;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.dogyjammers.jammypiece.infra.Consumer;
+import org.dogyjammers.jammypiece.infra.MachineSpecificConfiguration;
+import org.dogyjammers.jammypiece.infra.MachineSpecificConfiguration.CfgItem;
 import org.dogyjammers.jammypiece.infra.Producer;
 
 /**
@@ -22,7 +23,6 @@ public class MidiOut implements Consumer<MidiEvent>
 {
   private static final Logger LOGGER = LogManager.getLogger();
 
-  private final Synthesizer mSynth;
   private final Receiver mReceiver;
 
   /**
@@ -32,30 +32,46 @@ public class MidiOut implements Consumer<MidiEvent>
    *
    * @throws MidiUnavailableException if the MIDI output device couldn't be opened.
    */
-  public MidiOut(List<Producer<MidiEvent>> xiSources) throws MidiUnavailableException, InvalidMidiDataException
+  public MidiOut(List<Producer<MidiEvent>> xiSources) throws MidiUnavailableException
   {
-    mSynth = MidiSystem.getSynthesizer();
-    mSynth.open();
-    LOGGER.info("Opened synth: " + mSynth.getDeviceInfo().getName() + " " + mSynth.getDeviceInfo().getDescription());
+    // Get the configured MIDI device (or the default device if none is configured).
+    String lConfiguredDeviceStr = MachineSpecificConfiguration.getCfgVal(CfgItem.MIDI_OUT_DEVICE, null);
 
-    // Check whether time-stamping is supported.
-    if (mSynth.getMicrosecondPosition() == -1)
+    // Find the configured device.
+    MidiDevice lDevice = null;
+    Receiver lReceiver = null;
+    for (Info lDeviceInfo : MidiSystem.getMidiDeviceInfo())
     {
-      LOGGER.warn("Timestamping not supported by MidiOut");
+      String lDeviceStr = lDeviceInfo.getVendor() + " " + lDeviceInfo.getName() + " " + lDeviceInfo.getDescription();
+      LOGGER.info("Found device: " + lDeviceStr);
+
+      if ((lConfiguredDeviceStr != null) && (lConfiguredDeviceStr.equals(lDeviceStr)))
+      {
+        lDevice = MidiSystem.getMidiDevice(lDeviceInfo);
+        lReceiver = lDevice.getReceiver();
+      }
     }
 
-    mReceiver = mSynth.getReceiver();
-
-    Instrument[] lLoadedInstruments = mSynth.getLoadedInstruments();
-    for (int lii = 0; lii < lLoadedInstruments.length; lii++)
+    if (lDevice == null)
     {
-      LOGGER.info("Instrument " + lii + ": " + lLoadedInstruments[lii].getName());
+      LOGGER.warn("No configured MIDI output device - using default");
+      lReceiver = MidiSystem.getReceiver();
+    }
+    else
+    {
+      lDevice.open();
+      LOGGER.info("Opened synth: " + lDevice.getDeviceInfo().getVendor() + " " +
+                                     lDevice.getDeviceInfo().getName() + " " +
+                                     lDevice.getDeviceInfo().getDescription());
+
+      // Check whether time-stamping is supported.
+      if (lDevice.getMicrosecondPosition() == -1)
+      {
+        LOGGER.warn("Timestamping not supported by MidiOut");
+      }
     }
 
-    // Play a different instrument.
-    // Instrument lInstrument = lLoadedInstruments[55];
-    // mSynth.getChannels()[0].programChange(lInstrument.getPatch().getBank(), lInstrument.getPatch().getProgram());
-    // mReceiver.send(new ShortMessage(ShortMessage.PROGRAM_CHANGE, 0, 109, 0), -1);
+    mReceiver = lReceiver;
 
     // Register as a consumer of events from all sources.
     for (Producer<MidiEvent> lSource : xiSources)
