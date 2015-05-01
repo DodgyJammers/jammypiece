@@ -86,6 +86,7 @@ public class MidiIn extends Distributor<MidiEvent> implements Receiver
   @Override
   public void send(MidiMessage xiMessage, long xiTimestamp)
   {
+    LOGGER.debug("Event received");
     distribute(new MidiEvent(xiMessage, -1));
   }
 }

@@ -54,7 +54,7 @@ public class DummyMidiSource extends Distributor<MidiEvent> implements Runnable
         lEvent = (lEvent + 1) % lEvents.length;
 
         lPlaying = !lPlaying;
-        Thread.sleep(lPlaying ? 500 : 100, 0);
+        Thread.sleep(lPlaying ? 2000 : 2000, 0);
       }
     }
     catch (Exception lEx)

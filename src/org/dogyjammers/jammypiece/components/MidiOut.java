@@ -83,6 +83,7 @@ public class MidiOut implements Consumer<MidiEvent>
   @Override
   public void consume(MidiEvent xiItem)
   {
+    LOGGER.debug("Event transmitted");
     mMidiOut.send(xiItem.getMessage(), xiItem.getTick());
   }
 }
