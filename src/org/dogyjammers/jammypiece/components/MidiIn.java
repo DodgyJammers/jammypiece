@@ -1,88 +1,91 @@
 package org.dogyjammers.jammypiece.components;
 
-import java.util.List;
-
 import javax.sound.midi.MidiDevice;
 import javax.sound.midi.MidiDevice.Info;
 import javax.sound.midi.MidiEvent;
+import javax.sound.midi.MidiMessage;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.MidiUnavailableException;
 import javax.sound.midi.Receiver;
+import javax.sound.midi.Transmitter;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.dogyjammers.jammypiece.infra.Consumer;
+import org.dogyjammers.jammypiece.infra.Distributor;
 import org.dogyjammers.jammypiece.infra.MachineSpecificConfiguration;
 import org.dogyjammers.jammypiece.infra.MachineSpecificConfiguration.CfgItem;
-import org.dogyjammers.jammypiece.infra.Producer;
 
 /**
  * Component to sink MIDI events in jammiepiece and output them to OS.
  */
-public class MidiOut implements Consumer<MidiEvent>
+public class MidiIn extends Distributor<MidiEvent> implements Receiver
 {
   private static final Logger LOGGER = LogManager.getLogger();
 
-  private final Receiver mMidiOut;
+  private final Transmitter mMidiIn;
 
   /**
    * Create a MidiOut device to play from the specified source.
    *
-   * @param xiSource - the source.
-   *
-   * @throws MidiUnavailableException if the MIDI output device couldn't be opened.
+   * @throws MidiUnavailableException if the configured MIDI input device couldn't be opened.
    */
-  public MidiOut(List<Producer<MidiEvent>> xiSources) throws MidiUnavailableException
+  public MidiIn() throws MidiUnavailableException
   {
     // Get the configured MIDI device (or the default device if none is configured).
-    String lConfiguredDeviceStr = MachineSpecificConfiguration.getCfgVal(CfgItem.MIDI_OUT_DEVICE, null);
+    String lConfiguredDeviceStr = MachineSpecificConfiguration.getCfgVal(CfgItem.MIDI_IN_DEVICE, null);
 
     // Find the configured device.
     MidiDevice lDevice = null;
-    Receiver lMidiOut = null;
+    Transmitter lMidiIn = null;
     for (Info lDeviceInfo : MidiSystem.getMidiDeviceInfo())
     {
       String lDeviceStr = lDeviceInfo.getVendor() + " " + lDeviceInfo.getName() + " " + lDeviceInfo.getDescription();
-      LOGGER.info("Found device: " + lDeviceStr);
 
       if ((lConfiguredDeviceStr != null) && (lConfiguredDeviceStr.equals(lDeviceStr)))
       {
         lDevice = MidiSystem.getMidiDevice(lDeviceInfo);
-        lMidiOut = lDevice.getReceiver();
+        lMidiIn = lDevice.getTransmitter();
+        break;
       }
     }
 
     if (lDevice == null)
     {
-      LOGGER.warn("No configured MIDI output device - using default");
-      lMidiOut = MidiSystem.getReceiver();
+      LOGGER.warn("No configured MIDI input device - using default");
+      lMidiIn = MidiSystem.getTransmitter();
     }
     else
     {
       lDevice.open();
-      LOGGER.info("Opened synth: " + lDevice.getDeviceInfo().getVendor() + " " +
-                                     lDevice.getDeviceInfo().getName() + " " +
-                                     lDevice.getDeviceInfo().getDescription());
+      LOGGER.info("Opened MIDI in: " + lDevice.getDeviceInfo().getVendor() + " " +
+                                       lDevice.getDeviceInfo().getName() + " " +
+                                       lDevice.getDeviceInfo().getDescription());
 
       // Check whether time-stamping is supported.
       if (lDevice.getMicrosecondPosition() == -1)
       {
-        LOGGER.warn("Timestamping not supported by MidiOut");
+        LOGGER.warn("Timestamping not supported by MidiIn");
       }
     }
 
-    mMidiOut = lMidiOut;
+    // Set ourselves as the receiver of MIDI events.
+    mMidiIn = lMidiIn;
+  }
 
-    // Register as a consumer of events from all sources.
-    for (Producer<MidiEvent> lSource : xiSources)
-    {
-      lSource.registerConsumer(this);
-    }
+  public void start()
+  {
+    mMidiIn.setReceiver(this);
   }
 
   @Override
-  public void consume(MidiEvent xiItem)
+  public void close()
   {
-    mMidiOut.send(xiItem.getMessage(), xiItem.getTick());
+    mMidiIn.close();
+  }
+
+  @Override
+  public void send(MidiMessage xiMessage, long xiTimestamp)
+  {
+    distribute(new MidiEvent(xiMessage, -1));
   }
 }

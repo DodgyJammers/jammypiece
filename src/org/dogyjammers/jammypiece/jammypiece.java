@@ -10,12 +10,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.dogyjammers.jammypiece.components.ChordSelector;
 import org.dogyjammers.jammypiece.components.Clicker;
-import org.dogyjammers.jammypiece.components.DummyMidiSource;
 import org.dogyjammers.jammypiece.components.Harmoniser;
 import org.dogyjammers.jammypiece.components.InputSelector;
 import org.dogyjammers.jammypiece.components.KeyDetector;
 import org.dogyjammers.jammypiece.components.MelodyAdjuster;
 import org.dogyjammers.jammypiece.components.Metronome;
+import org.dogyjammers.jammypiece.components.MidiIn;
 import org.dogyjammers.jammypiece.components.MidiOut;
 import org.dogyjammers.jammypiece.components.TempoDetector;
 import org.dogyjammers.jammypiece.components.TimeSignatureDetector;
@@ -38,7 +38,8 @@ public class jammypiece
     try
     {
       // Create all the components and join them up.
-      DummyMidiSource lSource = new DummyMidiSource();
+      // DummyMidiSource lSource = new DummyMidiSource();
+      MidiIn lSource = new MidiIn();
       List<Producer<MidiEvent>> lSources = Collections.singletonList((Producer<MidiEvent>)lSource);
       Producer<MidiEvent> lInputSelector = new InputSelector(lSources);
       Producer<KeyChangeEvent> lKeyDetector = new KeyDetector(lInputSelector);
