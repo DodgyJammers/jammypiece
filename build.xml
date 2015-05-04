@@ -1,0 +1,13 @@
+<project name="jammypiece" basedir=".">
+
+<path id="classpath">
+  <fileset dir="src/external" includes="**/*.jar"/>
+</path>
+
+<target name="build">
+  <mkdir dir="out"/>
+  <javac srcdir="src" destdir="out" classpathref="classpath"/>
+</target>
+
+</project>
+
