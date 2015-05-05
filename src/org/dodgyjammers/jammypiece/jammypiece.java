@@ -12,6 +12,7 @@ import org.dodgyjammers.jammypiece.components.ChordSelector;
 import org.dodgyjammers.jammypiece.components.Clicker;
 import org.dodgyjammers.jammypiece.components.Harmoniser;
 import org.dodgyjammers.jammypiece.components.InputSelector;
+import org.dodgyjammers.jammypiece.components.JunkFilter;
 import org.dodgyjammers.jammypiece.components.KeyDetector;
 import org.dodgyjammers.jammypiece.components.MelodyAdjuster;
 import org.dodgyjammers.jammypiece.components.Metronome;
@@ -41,8 +42,10 @@ public class jammypiece
       // Create all the components and join them up.
       // DummyMidiSource lSource = new DummyMidiSource();
       MidiIn lSource = new MidiIn();
-      lSource.registerConsumer(new MidiEventDumper());
-      List<Producer<MidiEvent>> lSources = Collections.singletonList((Producer<MidiEvent>)lSource);
+      JunkFilter lJunkFilter = new JunkFilter();
+      lSource.registerConsumer(lJunkFilter);
+      lJunkFilter.registerConsumer(new MidiEventDumper());
+      List<Producer<MidiEvent>> lSources = Collections.singletonList((Producer<MidiEvent>)lJunkFilter);
       Producer<MidiEvent> lInputSelector = new InputSelector(lSources);
       Producer<KeyChangeEvent> lKeyDetector = new KeyDetector(lInputSelector);
       Producer<TempoChangeEvent> lTempoDetector = new TempoDetector(lInputSelector);

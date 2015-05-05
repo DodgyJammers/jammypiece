@@ -1,5 +1,3 @@
-// MidiEventDumper.java
-// (C) COPYRIGHT METASWITCH NETWORKS 2015
 package org.dodgyjammers.jammypiece.components;
 
 import javax.sound.midi.MidiEvent;
