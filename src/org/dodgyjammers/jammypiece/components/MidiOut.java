@@ -43,11 +43,21 @@ public class MidiOut implements Consumer<MidiEvent>
     for (Info lDeviceInfo : MidiSystem.getMidiDeviceInfo())
     {
       String lDeviceStr = lDeviceInfo.getVendor() + " " + lDeviceInfo.getName() + " " + lDeviceInfo.getDescription();
+      MidiDevice lTmpDevice = MidiSystem.getMidiDevice(lDeviceInfo);
 
-      if ((lConfiguredDeviceStr != null) && (lConfiguredDeviceStr.equals(lDeviceStr)))
+      if (lTmpDevice.getMaxReceivers() == 0)
       {
-        lDevice = MidiSystem.getMidiDevice(lDeviceInfo);
-        lMidiOut = lDevice.getReceiver();
+        LOGGER.info("Skipping device: " + lDeviceStr);
+      }
+      else
+      {
+        LOGGER.info("Found rx device: " + lDeviceStr);
+        
+        if ((lConfiguredDeviceStr != null) && (lConfiguredDeviceStr.equals(lDeviceStr)))
+        {
+          lDevice = lTmpDevice;
+          lMidiOut = lDevice.getReceiver();
+        }
       }
     }
 

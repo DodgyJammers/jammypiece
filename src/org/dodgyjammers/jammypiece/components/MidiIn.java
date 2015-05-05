@@ -40,12 +40,21 @@ public class MidiIn extends Distributor<MidiEvent> implements Receiver
     for (Info lDeviceInfo : MidiSystem.getMidiDeviceInfo())
     {
       String lDeviceStr = lDeviceInfo.getVendor() + " " + lDeviceInfo.getName() + " " + lDeviceInfo.getDescription();
-      LOGGER.info("Found device: " + lDeviceStr);
+      MidiDevice lTmpDevice = MidiSystem.getMidiDevice(lDeviceInfo);
 
-      if ((lConfiguredDeviceStr != null) && (lConfiguredDeviceStr.equals(lDeviceStr)))
+      if (lTmpDevice.getMaxTransmitters() == 0)
       {
-        lDevice = MidiSystem.getMidiDevice(lDeviceInfo);
-        lMidiIn = lDevice.getTransmitter();
+        LOGGER.info("Skipping device: " + lDeviceStr);
+      }
+      else
+      {
+        LOGGER.info("Found tx device: " + lDeviceStr);
+        
+        if ((lConfiguredDeviceStr != null) && (lConfiguredDeviceStr.equals(lDeviceStr)))
+        {
+          lDevice = lTmpDevice;
+          lMidiIn = lDevice.getTransmitter();
+        }
       }
     }
 
