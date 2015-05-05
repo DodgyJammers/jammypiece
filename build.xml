@@ -1,0 +1,21 @@
+<project name="jammypiece" basedir=".">
+
+    <path id="classpath">
+        <pathelement location="out"/>
+        <pathelement location="src/external/Log4J/log4j-api-2.0-rc1.jar"/>
+        <pathelement location="src/external/Log4J/log4j-core-2.0-rc1.jar"/>
+    </path>
+
+    <target name="build">
+        <mkdir dir="out"/>
+        <javac srcdir="src" destdir="out" classpathref="classpath"/>
+    </target>
+
+    <target name="run">
+        <java classname="org.dodgyjammers.jammypiece.jammypiece" failonerror="true" fork="yes">
+            <classpath refid="classpath"/>
+        </java>
+    </target>
+
+</project>
+
