@@ -4,6 +4,7 @@
         <pathelement location="out"/>
         <pathelement location="src/external/Log4J/log4j-api-2.0-rc1.jar"/>
         <pathelement location="src/external/Log4J/log4j-core-2.0-rc1.jar"/>
+        <pathelement location="data/cfg"/>
     </path>
 
     <target name="build">
