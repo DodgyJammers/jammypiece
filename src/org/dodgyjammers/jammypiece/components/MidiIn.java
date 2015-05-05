@@ -46,13 +46,19 @@ public class MidiIn extends Distributor<MidiEvent> implements Receiver
       {
         lDevice = MidiSystem.getMidiDevice(lDeviceInfo);
         lMidiIn = lDevice.getTransmitter();
-        break;
       }
     }
 
     if (lDevice == null)
     {
-      LOGGER.warn("No configured MIDI input device - using default");
+      if (lConfiguredDeviceStr != null)
+      {
+        LOGGER.warn("Failed to find configured MIDI input device: " + lConfiguredDeviceStr);
+      }
+      else
+      {
+        LOGGER.warn("No configured MIDI input device - using default");
+      }
       lMidiIn = MidiSystem.getTransmitter();
     }
     else
