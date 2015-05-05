@@ -43,7 +43,6 @@ public class MidiOut implements Consumer<MidiEvent>
     for (Info lDeviceInfo : MidiSystem.getMidiDeviceInfo())
     {
       String lDeviceStr = lDeviceInfo.getVendor() + " " + lDeviceInfo.getName() + " " + lDeviceInfo.getDescription();
-      LOGGER.info("Found device: " + lDeviceStr);
 
       if ((lConfiguredDeviceStr != null) && (lConfiguredDeviceStr.equals(lDeviceStr)))
       {
