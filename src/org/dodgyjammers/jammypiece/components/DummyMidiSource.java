@@ -26,8 +26,10 @@ public class DummyMidiSource extends Distributor<MidiEvent> implements Runnable
     mWorker.setDaemon(true);
   }
 
+  @Override
   public void start()
   {
+    super.start();
     mWorker.start();
   }
 

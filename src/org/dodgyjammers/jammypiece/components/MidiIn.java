@@ -49,7 +49,7 @@ public class MidiIn extends Distributor<MidiEvent> implements Receiver
       else
       {
         LOGGER.info("Found tx device: " + lDeviceStr);
-        
+
         if ((lConfiguredDeviceStr != null) && (lConfiguredDeviceStr.equals(lDeviceStr)))
         {
           lDevice = lTmpDevice;
@@ -88,8 +88,10 @@ public class MidiIn extends Distributor<MidiEvent> implements Receiver
     mMidiIn = lMidiIn;
   }
 
+  @Override
   public void start()
   {
+    super.start();
     mMidiIn.setReceiver(this);
   }
 

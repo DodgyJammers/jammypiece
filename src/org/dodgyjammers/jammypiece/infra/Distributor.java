@@ -59,4 +59,10 @@ public abstract class Distributor<T> implements Producer<T>
       LOGGER.error("Consumer " + xiConsumer + " threw while processing " + xiItem, e);
     }
   }
+
+  @Override
+  public void start()
+  {
+    // Default implementation does nothing.
+  }
 }

@@ -2,11 +2,13 @@ package org.dodgyjammers.jammypiece.components;
 
 import java.util.List;
 
+import javax.sound.midi.Instrument;
 import javax.sound.midi.MidiDevice;
 import javax.sound.midi.MidiDevice.Info;
 import javax.sound.midi.MidiEvent;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.MidiUnavailableException;
+import javax.sound.midi.Patch;
 import javax.sound.midi.Receiver;
 
 import org.apache.logging.log4j.LogManager;
@@ -29,7 +31,7 @@ public class MidiOut implements Consumer<MidiEvent>
   /**
    * Create a MidiOut device to play from the specified source.
    *
-   * @param xiSource - the source.
+   * @param xiSources - the MIDI event sources.  These are mixed together to form the output.
    *
    * @throws MidiUnavailableException if the MIDI output device couldn't be opened.
    */
@@ -84,6 +86,9 @@ public class MidiOut implements Consumer<MidiEvent>
     mDevice = lDevice;
     mMidiOut = lMidiOut;
 
+    // Dump details of the chosen device.
+    dumpDeviceDetails();
+
     // Register as a consumer of events from all sources.
     for (Producer<MidiEvent> lSource : xiSources)
     {
@@ -103,5 +108,22 @@ public class MidiOut implements Consumer<MidiEvent>
   public long getMicrosecondPosition()
   {
     return mDevice.getMicrosecondPosition();
+  }
+
+  private void dumpDeviceDetails()
+  {
+    try
+    {
+      Instrument[] lInstruments = MidiSystem.getSynthesizer().getAvailableInstruments();
+      for (Instrument lInstrument : lInstruments)
+      {
+        Patch lPatch = lInstrument.getPatch();
+        LOGGER.debug("Instrument " + lPatch.getBank() + "/" + lPatch.getProgram() + ": " + lInstrument.getName());
+      }
+    }
+    catch (MidiUnavailableException lEx)
+    {
+      LOGGER.warn("Couldn't enumerate instruments", lEx);
+    }
   }
 }

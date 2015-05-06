@@ -13,4 +13,9 @@ public interface Producer<T>
    * @param xiConsumer - the consumer.
    */
   public void registerConsumer(Consumer<T> xiConsumer);
+
+  /**
+   * Start the producer.
+   */
+  public void start();
 }

@@ -10,6 +10,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.dodgyjammers.jammypiece.components.ChordSelector;
 import org.dodgyjammers.jammypiece.components.Clicker;
+import org.dodgyjammers.jammypiece.components.DummyMidiSource;
 import org.dodgyjammers.jammypiece.components.Harmoniser;
 import org.dodgyjammers.jammypiece.components.InputSelector;
 import org.dodgyjammers.jammypiece.components.JunkFilter;
@@ -25,6 +26,8 @@ import org.dodgyjammers.jammypiece.events.ChordChangeEvent;
 import org.dodgyjammers.jammypiece.events.KeyChangeEvent;
 import org.dodgyjammers.jammypiece.events.TempoChangeEvent;
 import org.dodgyjammers.jammypiece.events.TimeSignatureChangeEvent;
+import org.dodgyjammers.jammypiece.infra.MachineSpecificConfiguration;
+import org.dodgyjammers.jammypiece.infra.MachineSpecificConfiguration.CfgItem;
 import org.dodgyjammers.jammypiece.infra.Producer;
 
 /**
@@ -40,9 +43,17 @@ public class jammypiece
     try
     {
       // Create all the components and join them up.
-      // DummyMidiSource lSource = new DummyMidiSource();
-      MidiIn lSource = new MidiIn();
-      List<Producer<MidiEvent>> lSources = Collections.singletonList((Producer<MidiEvent>)lSource);
+
+      Producer<MidiEvent> lSource;
+      if ("dummy".equals(MachineSpecificConfiguration.getCfgVal(CfgItem.MIDI_IN_DEVICE, null)))
+      {
+        lSource = new DummyMidiSource();
+      }
+      else
+      {
+        lSource = new MidiIn();
+      }
+      List<Producer<MidiEvent>> lSources = Collections.singletonList(lSource);
       Producer<MidiEvent> lInputSelector = new InputSelector(lSources);
       Producer<MidiEvent> lJunkFilter = new JunkFilter(lInputSelector);
       new MidiEventDumper(lJunkFilter);
@@ -62,8 +73,9 @@ public class jammypiece
       MidiOut lMidiOut = new MidiOut(lOutputs);
       lMetronome.setClockSource(lMidiOut);
 
-      // Start the source.
+      // Start all the components that need to be started.
       lSource.start();
+      lMetronome.start();
       LOGGER.info("jammypiece started");
 
       // Spin until interrupted.
