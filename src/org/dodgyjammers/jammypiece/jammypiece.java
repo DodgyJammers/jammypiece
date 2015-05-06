@@ -24,7 +24,6 @@ import org.dodgyjammers.jammypiece.components.TimeSignatureDetector;
 import org.dodgyjammers.jammypiece.events.ChordChangeEvent;
 import org.dodgyjammers.jammypiece.events.KeyChangeEvent;
 import org.dodgyjammers.jammypiece.events.TempoChangeEvent;
-import org.dodgyjammers.jammypiece.events.TickEvent;
 import org.dodgyjammers.jammypiece.events.TimeSignatureChangeEvent;
 import org.dodgyjammers.jammypiece.infra.Producer;
 
@@ -50,16 +49,18 @@ public class jammypiece
       Producer<KeyChangeEvent> lKeyDetector = new KeyDetector(lJunkFilter);
       Producer<TempoChangeEvent> lTempoDetector = new TempoDetector(lJunkFilter);
       Producer<TimeSignatureChangeEvent> lTimeSigDetector = new TimeSignatureDetector(lJunkFilter, lTempoDetector);
-      Producer<TickEvent> lMetronome = new Metronome(lTempoDetector, lTimeSigDetector);
+      Metronome lMetronome = new Metronome(lTempoDetector, lTimeSigDetector);
       Producer<MidiEvent> lClicker = new Clicker(lMetronome);
       Producer<ChordChangeEvent> lChordSelector = new ChordSelector(lJunkFilter, lKeyDetector, lMetronome);
       Producer<MidiEvent> lAdjuster = new MelodyAdjuster(lJunkFilter, lChordSelector, lMetronome);
       Producer<MidiEvent> lHarmoniser = new Harmoniser(lAdjuster, lChordSelector, lMetronome);
+      new MidiEventDumper(lClicker);
       List<Producer<MidiEvent>> lOutputs = new LinkedList<>();
       lOutputs.add(lAdjuster);
       lOutputs.add(lHarmoniser);
       lOutputs.add(lClicker);
-      new MidiOut(lOutputs);
+      MidiOut lMidiOut = new MidiOut(lOutputs);
+      lMetronome.setClockSource(lMidiOut);
 
       // Start the source.
       lSource.start();

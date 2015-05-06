@@ -9,7 +9,7 @@ import org.dodgyjammers.jammypiece.infra.Producer;
 
 public class TempoDetector extends Distributor<TempoChangeEvent> implements Consumer<MidiEvent>
 {
-  private TempoChangeEvent mTempo = null;
+  private TempoChangeEvent mTempo = new TempoChangeEvent(500000, -1);
 
   public TempoDetector(Producer<MidiEvent> xiMelodySource)
   {
@@ -21,7 +21,7 @@ public class TempoDetector extends Distributor<TempoChangeEvent> implements Cons
   {
     super.registerConsumer(xiConsumer);
 
-    // Immediately tell new consumers what the current key is.
+    // Immediately tell new consumers what the current tempo is.
     xiConsumer.consume(mTempo);
   }
 

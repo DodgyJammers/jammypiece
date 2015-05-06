@@ -45,6 +45,14 @@ public class MachineSpecificConfiguration
      * The tempo (in beats per minute).
      */
     TEMPO,
+
+    /**
+     * Clicker configuration.
+     */
+    CLICKER_ENABLED,
+    CLICKER_CHANNEL,
+    CLICKER_STRESSED_NOTE,
+    CLICKER_UNSTRESSED_NOTE,
   }
 
   private static final Properties MACHINE_PROPERTIES = new Properties();

@@ -16,6 +16,7 @@ public enum TimeSignature
 
   private TimeSignature(int xiNumBeats, NoteLength xiNoteLength, String xiStressPattern)
   {
+    assert(xiNumBeats == xiStressPattern.length()) : "Wrong number of beats in stress pattern";
     mNumBeats = xiNumBeats;
     mNoteLength = xiNoteLength;
     mStressPattern = xiStressPattern;

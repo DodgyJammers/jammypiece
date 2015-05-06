@@ -23,6 +23,7 @@ public class MidiOut implements Consumer<MidiEvent>
 {
   private static final Logger LOGGER = LogManager.getLogger();
 
+  private final MidiDevice mDevice;
   private final Receiver mMidiOut;
 
   /**
@@ -52,7 +53,7 @@ public class MidiOut implements Consumer<MidiEvent>
       else
       {
         LOGGER.info("Found rx device: " + lDeviceStr);
-        
+
         if ((lConfiguredDeviceStr != null) && (lConfiguredDeviceStr.equals(lDeviceStr)))
         {
           lDevice = lTmpDevice;
@@ -80,6 +81,7 @@ public class MidiOut implements Consumer<MidiEvent>
       }
     }
 
+    mDevice = lDevice;
     mMidiOut = lMidiOut;
 
     // Register as a consumer of events from all sources.
@@ -92,7 +94,14 @@ public class MidiOut implements Consumer<MidiEvent>
   @Override
   public void consume(MidiEvent xiItem)
   {
-    LOGGER.debug("Event transmitted");
     mMidiOut.send(xiItem.getMessage(), xiItem.getTick());
+  }
+
+  /**
+   * @return the microsecond position of the output device.
+   */
+  public long getMicrosecondPosition()
+  {
+    return mDevice.getMicrosecondPosition();
   }
 }
