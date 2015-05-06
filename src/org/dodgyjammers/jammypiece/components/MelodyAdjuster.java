@@ -1,6 +1,8 @@
 package org.dodgyjammers.jammypiece.components;
 
 import javax.sound.midi.MidiEvent;
+import javax.sound.midi.MidiMessage;
+import javax.sound.midi.ShortMessage;
 
 import org.dodgyjammers.jammypiece.events.ChordChangeEvent;
 import org.dodgyjammers.jammypiece.events.TickEvent;
@@ -29,6 +31,10 @@ public class MelodyAdjuster extends Distributor<MidiEvent> implements Consumer<M
   public void consume(MidiEvent xiItem) throws Exception
   {
     // Pass through melody events.
+    // Be really annoying and swap C4 and C#4.
+    if (xiItem.getMessage().getStatus() == 0x90 && xiItem.getMessage().getMessage()[1] == 0x3C) {
+      xiItem = new MidiEvent(new ShortMessage(0x90, 0x3D, xiItem.getMessage().getMessage()[2]), xiItem.getTick());
+    }
     distribute(xiItem);
   }
 
