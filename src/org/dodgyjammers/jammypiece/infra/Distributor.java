@@ -28,7 +28,7 @@ public abstract class Distributor<T> implements Producer<T>
   
   protected void registerConsumerAndUpdate(Consumer<T> xiConsumer, T xiItem)
   {
-    registerConsumer(xiConsumer);
+    mConsumers.add(xiConsumer);
     safelyTell(xiConsumer, xiItem);
   }
 
