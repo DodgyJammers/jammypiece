@@ -43,8 +43,8 @@ public class jammypiece
   {
     try
     {
-      WsLogServer server = WsLogServer.INSTANCE;
-      server.sendToAll("hello world");
+      // Initialise log server.
+      WsLogServer wsLogServer = WsLogServer.INSTANCE;
       
       // Create all the components and join them up.
 
