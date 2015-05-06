@@ -12,5 +12,5 @@ public interface Consumer<T>
    *
    * @param xiItem - the item.
    */
-  public void consume(T xiItem);
+  public void consume(T xiItem) throws Exception;
 }

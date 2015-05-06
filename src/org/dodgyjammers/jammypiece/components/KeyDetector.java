@@ -19,10 +19,8 @@ public class KeyDetector extends Distributor<KeyChangeEvent> implements Consumer
   @Override
   public void registerConsumer(Consumer<KeyChangeEvent> xiConsumer)
   {
-    super.registerConsumer(xiConsumer);
-
     // Immediately tell new consumers what the current key is.
-    xiConsumer.consume(mKey);
+    super.registerConsumerAndUpdate(xiConsumer, mKey);
   }
 
   @Override

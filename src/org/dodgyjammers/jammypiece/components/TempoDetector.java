@@ -19,10 +19,8 @@ public class TempoDetector extends Distributor<TempoChangeEvent> implements Cons
   @Override
   public void registerConsumer(Consumer<TempoChangeEvent> xiConsumer)
   {
-    super.registerConsumer(xiConsumer);
-
     // Immediately tell new consumers what the current tempo is.
-    xiConsumer.consume(mTempo);
+    super.registerConsumerAndUpdate(xiConsumer, mTempo);
   }
 
   @Override

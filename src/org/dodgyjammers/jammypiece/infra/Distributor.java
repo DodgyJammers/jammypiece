@@ -25,6 +25,12 @@ public abstract class Distributor<T> implements Producer<T>
   {
     mConsumers.add(xiConsumer);
   }
+  
+  protected void registerConsumerAndUpdate(Consumer<T> xiConsumer, T xiItem)
+  {
+    registerConsumer(xiConsumer);
+    safelyTell(xiConsumer, xiItem);
+  }
 
   /**
    * Distribute an item to all registered consumers.
@@ -36,7 +42,21 @@ public abstract class Distributor<T> implements Producer<T>
     LOGGER.trace("Distributing " + xiItem);
     for (Consumer<T> lConsumer : mConsumers)
     {
-      lConsumer.consume(xiItem);
+      safelyTell(lConsumer, xiItem);
+    }
+  }
+  
+  private void safelyTell(Consumer<T> xiConsumer, T xiItem)
+  {
+    try
+    {
+      xiConsumer.consume(xiItem);
+    }
+    catch (Exception e)
+    {
+      // Log the exception as an error, but the show must go on. Swallow it
+      // and continue.
+      LOGGER.error("Consumer " + xiConsumer + " threw while processing " + xiItem, e);
     }
   }
 }
