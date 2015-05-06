@@ -18,7 +18,7 @@ public class MidiEventDumper implements Consumer<MidiEvent>
   }
 
   @Override
-  public void consume(MidiEvent xiItem)
+  public void consume(MidiEvent xiItem) throws Exception
   {
     mDumpReceiver.send(xiItem.getMessage(), xiItem.getTick());
   }

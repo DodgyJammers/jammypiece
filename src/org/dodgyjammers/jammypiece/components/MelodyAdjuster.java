@@ -26,7 +26,7 @@ public class MelodyAdjuster extends Distributor<MidiEvent> implements Consumer<M
   }
 
   @Override
-  public void consume(MidiEvent xiItem)
+  public void consume(MidiEvent xiItem) throws Exception
   {
     // Pass through melody events.
     distribute(xiItem);
@@ -35,7 +35,7 @@ public class MelodyAdjuster extends Distributor<MidiEvent> implements Consumer<M
   private class ChordListener implements Consumer<ChordChangeEvent>
   {
     @Override
-    public void consume(ChordChangeEvent xiItem)
+    public void consume(ChordChangeEvent xiItem) throws Exception
     {
       // Discard chord events.
     }
@@ -45,7 +45,7 @@ public class MelodyAdjuster extends Distributor<MidiEvent> implements Consumer<M
   {
 
     @Override
-    public void consume(TickEvent xiItem)
+    public void consume(TickEvent xiItem) throws Exception
     {
       // Discard metronome events.
     }

@@ -20,7 +20,7 @@ public class InputSelector extends Distributor<MidiEvent> implements Consumer<Mi
   }
 
   @Override
-  public void consume(MidiEvent xiItem)
+  public void consume(MidiEvent xiItem) throws Exception
   {
     // Just a pass-through component for now.
     distribute(xiItem);

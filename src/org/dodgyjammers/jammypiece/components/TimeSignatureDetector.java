@@ -24,7 +24,7 @@ public class TimeSignatureDetector extends Distributor<TimeSignatureChangeEvent>
   }
 
   @Override
-  public void consume(MidiEvent xiItem)
+  public void consume(MidiEvent xiItem) throws Exception
   {
     // Discard melody events
   }

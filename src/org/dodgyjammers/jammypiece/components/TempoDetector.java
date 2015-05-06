@@ -24,7 +24,7 @@ public class TempoDetector extends Distributor<TempoChangeEvent> implements Cons
   }
 
   @Override
-  public void consume(MidiEvent xiItem)
+  public void consume(MidiEvent xiItem) throws Exception
   {
     // Discard events
   }

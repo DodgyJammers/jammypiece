@@ -24,7 +24,7 @@ public class KeyDetector extends Distributor<KeyChangeEvent> implements Consumer
   }
 
   @Override
-  public void consume(MidiEvent xiItem)
+  public void consume(MidiEvent xiItem) throws Exception
   {
     // Discard events
   }

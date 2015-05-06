@@ -27,7 +27,7 @@ public class ChordSelector extends Distributor<ChordChangeEvent> implements Cons
   }
 
   @Override
-  public void consume(MidiEvent xiItem)
+  public void consume(MidiEvent xiItem) throws Exception
   {
     // Discard events.
   }
@@ -35,7 +35,7 @@ public class ChordSelector extends Distributor<ChordChangeEvent> implements Cons
   private class MetronomeListener implements Consumer<TickEvent>
   {
     @Override
-    public void consume(TickEvent xiTick)
+    public void consume(TickEvent xiTick) throws Exception
     {
       // Discard metronome events.
     }
@@ -44,7 +44,7 @@ public class ChordSelector extends Distributor<ChordChangeEvent> implements Cons
   private class KeyChangeListener implements Consumer<KeyChangeEvent>
   {
     @Override
-    public void consume(KeyChangeEvent xiTick)
+    public void consume(KeyChangeEvent xiTick) throws Exception
     {
       // Discard key change events.
     }

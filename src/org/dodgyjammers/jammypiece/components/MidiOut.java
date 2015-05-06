@@ -92,7 +92,7 @@ public class MidiOut implements Consumer<MidiEvent>
   }
 
   @Override
-  public void consume(MidiEvent xiItem)
+  public void consume(MidiEvent xiItem) throws Exception
   {
     mMidiOut.send(xiItem.getMessage(), xiItem.getTick());
   }

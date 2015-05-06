@@ -35,7 +35,7 @@ public class Metronome extends Distributor<TickEvent> implements Consumer<TempoC
   }
 
   @Override
-  public void consume(TempoChangeEvent xiEvent)
+  public void consume(TempoChangeEvent xiEvent) throws Exception
   {
     mTempo = xiEvent.mTempo;
   }
@@ -44,7 +44,7 @@ public class Metronome extends Distributor<TickEvent> implements Consumer<TempoC
   {
 
     @Override
-    public void consume(TimeSignatureChangeEvent xiEvent)
+    public void consume(TimeSignatureChangeEvent xiEvent) throws Exception
     {
       mTimeSignature = xiEvent.mTimeSignature;
     }

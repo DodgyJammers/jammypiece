@@ -31,7 +31,7 @@ public class Clicker extends Distributor<MidiEvent> implements Consumer<TickEven
   }
 
   @Override
-  public void consume(TickEvent xiTick)
+  public void consume(TickEvent xiTick) throws Exception
   {
     try
     {

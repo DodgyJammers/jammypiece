@@ -15,7 +15,7 @@ public class JunkFilter extends Distributor<MidiEvent> implements Consumer<MidiE
   }
 
   @Override
-  public void consume(MidiEvent xiItem)
+  public void consume(MidiEvent xiItem) throws Exception
   {
     if (xiItem.getMessage().getStatus() != ShortMessage.TIMING_CLOCK)
     {
