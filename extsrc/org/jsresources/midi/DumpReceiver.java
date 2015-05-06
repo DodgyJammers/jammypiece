@@ -104,22 +104,22 @@ public class DumpReceiver
     "30 frames/second (non-drop)",
   };
 
-  private PrintStream   m_printStream;
+  private Sink m_sink;
   private boolean     m_bDebug;
   private boolean     m_bPrintTimeStampAsTicks;
 
 
 
-  public DumpReceiver(PrintStream printStream)
+  public DumpReceiver(Sink sink)
   {
-    this(printStream, false);
+    this(sink, false);
   }
 
 
-  public DumpReceiver(PrintStream printStream,
+  public DumpReceiver(Sink sink,
           boolean bPrintTimeStampAsTicks)
   {
-    m_printStream = printStream;
+    m_sink = sink;
     m_bDebug = false;
     m_bPrintTimeStampAsTicks = bPrintTimeStampAsTicks;
   }
@@ -167,7 +167,7 @@ public class DumpReceiver
         strTimeStamp = "timestamp " + lTimeStamp + " us: ";
       }
     }
-    m_printStream.println(strTimeStamp + strMessage);
+    m_sink.apply(strTimeStamp + strMessage);
   }
 
 
@@ -478,6 +478,10 @@ public class DumpReceiver
     // 3-byte messages left
     res += ' '+intToHex(sm.getData2());
     return res;
+  }
+  
+  public interface Sink {
+    void apply(String xiMsg);
   }
 }
 

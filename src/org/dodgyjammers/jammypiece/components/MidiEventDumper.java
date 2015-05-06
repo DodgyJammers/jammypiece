@@ -13,7 +13,12 @@ public class MidiEventDumper implements Consumer<MidiEvent>
 
   public MidiEventDumper(Producer<MidiEvent> xiSource)
   {
-    mDumpReceiver = new DumpReceiver(System.out);
+    mDumpReceiver = new DumpReceiver(new DumpReceiver.Sink() {
+      @Override
+      public void apply(String xiMsg) {
+        System.out.println(xiMsg);
+      }
+    });
     xiSource.registerConsumer(this);
   }
 
