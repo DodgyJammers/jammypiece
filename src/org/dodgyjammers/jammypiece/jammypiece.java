@@ -35,6 +35,7 @@ public class jammypiece
 {
   private static final Logger LOGGER = LogManager.getLogger();
 
+  @SuppressWarnings("unused")
   public static void main(String[] args)
   {
     try
@@ -42,18 +43,17 @@ public class jammypiece
       // Create all the components and join them up.
       // DummyMidiSource lSource = new DummyMidiSource();
       MidiIn lSource = new MidiIn();
-      JunkFilter lJunkFilter = new JunkFilter();
-      lSource.registerConsumer(lJunkFilter);
-      lJunkFilter.registerConsumer(new MidiEventDumper());
-      List<Producer<MidiEvent>> lSources = Collections.singletonList((Producer<MidiEvent>)lJunkFilter);
+      List<Producer<MidiEvent>> lSources = Collections.singletonList((Producer<MidiEvent>)lSource);
       Producer<MidiEvent> lInputSelector = new InputSelector(lSources);
-      Producer<KeyChangeEvent> lKeyDetector = new KeyDetector(lInputSelector);
-      Producer<TempoChangeEvent> lTempoDetector = new TempoDetector(lInputSelector);
-      Producer<TimeSignatureChangeEvent> lTimeSigDetector = new TimeSignatureDetector(lInputSelector, lTempoDetector);
+      Producer<MidiEvent> lJunkFilter = new JunkFilter(lInputSelector);
+      new MidiEventDumper(lJunkFilter);
+      Producer<KeyChangeEvent> lKeyDetector = new KeyDetector(lJunkFilter);
+      Producer<TempoChangeEvent> lTempoDetector = new TempoDetector(lJunkFilter);
+      Producer<TimeSignatureChangeEvent> lTimeSigDetector = new TimeSignatureDetector(lJunkFilter, lTempoDetector);
       Producer<TickEvent> lMetronome = new Metronome(lTempoDetector, lTimeSigDetector);
       Producer<MidiEvent> lClicker = new Clicker(lMetronome);
-      Producer<ChordChangeEvent> lChordSelector = new ChordSelector(lInputSelector, lKeyDetector, lMetronome);
-      Producer<MidiEvent> lAdjuster = new MelodyAdjuster(lInputSelector, lChordSelector, lMetronome);
+      Producer<ChordChangeEvent> lChordSelector = new ChordSelector(lJunkFilter, lKeyDetector, lMetronome);
+      Producer<MidiEvent> lAdjuster = new MelodyAdjuster(lJunkFilter, lChordSelector, lMetronome);
       Producer<MidiEvent> lHarmoniser = new Harmoniser(lAdjuster, lChordSelector, lMetronome);
       List<Producer<MidiEvent>> lOutputs = new LinkedList<>();
       lOutputs.add(lAdjuster);
