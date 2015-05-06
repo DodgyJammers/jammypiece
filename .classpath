@@ -6,5 +6,6 @@
 	<classpathentry kind="lib" path="src/external/Log4J/log4j-api-2.0-rc1.jar"/>
 	<classpathentry kind="lib" path="src/external/Log4J/log4j-core-2.0-rc1.jar"/>
 	<classpathentry kind="lib" path="data/cfg"/>
+	<classpathentry kind="lib" path="src/external/Java-WebSocket/java_websocket.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
