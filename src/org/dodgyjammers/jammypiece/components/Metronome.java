@@ -25,7 +25,7 @@ public class Metronome extends Distributor<TickEvent> implements Consumer<TempoC
   public Metronome(Producer<TempoChangeEvent> xiTempoSource,
                    Producer<TimeSignatureChangeEvent> xiTimeSigSource)
   {
-    mTimeSigListener = null;
+    mTimeSigListener = new TimeSignatureListener();
 
     xiTempoSource.registerConsumer(this);
     xiTimeSigSource.registerConsumer(mTimeSigListener);
@@ -43,6 +43,7 @@ public class Metronome extends Distributor<TickEvent> implements Consumer<TempoC
   private class TimeSignatureListener implements Consumer<TimeSignatureChangeEvent>
   {
 
+    @SuppressWarnings("synthetic-access")
     @Override
     public void consume(TimeSignatureChangeEvent xiEvent) throws Exception
     {
