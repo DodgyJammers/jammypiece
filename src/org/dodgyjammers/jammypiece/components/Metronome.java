@@ -83,9 +83,20 @@ public class Metronome extends Distributor<TickEvent> implements Consumer<TempoC
     }
   }
 
+  /**
+   * Set the clock source, used to schedule events for output.
+   *
+   * @param xiClockSource - the clock source.  This should be the final MidiOut device.
+   */
   public void setClockSource(MidiOut xiClockSource)
   {
     mMidiOut = xiClockSource;
+  }
+
+  @Override
+  public void start()
+  {
+    super.start();
     mWorker.start();
   }
 }
