@@ -4,18 +4,22 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.Collection;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 
 public class WsLogServer extends WebSocketServer
 {
+  private static final Logger LOGGER = LogManager.getLogger();
+
   public static final WsLogServer INSTANCE = new WsLogServer();
   
   private WsLogServer() {
     super(new InetSocketAddress(8887));
     start();
-    System.out.println("WsLogServer started on " + getAddress());
+    System.out.println("WsLogServer started on " + getAddress() + "; view using src/external/Java-WebSocket/chat.html");
   }
 
   @Override
@@ -32,8 +36,7 @@ public class WsLogServer extends WebSocketServer
 
   @Override
   public void onMessage(WebSocket arg0, String arg1) {
-    // TODO Auto-generated method stub
-    
+    LOGGER.warn("JammyPiece received command: " + arg1);
   }
 
   @Override

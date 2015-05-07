@@ -5,7 +5,7 @@
       <PatternLayout pattern="%d{HH:mm:ss.SSS} %level{ERROR=!, WARN=?, INFO=-, DEBUG=., TRACE=.} %-30.30logger{1} %msg%n"/>
     </Console>
     <WsLog name="WsLog">
-      <PatternLayout pattern="%c{1};%d{HH:mm:ss.SSS} %level{ERROR=!, WARN=?, INFO=-, DEBUG=., TRACE=.} %-30.30logger{1} %msg%n"/>
+      <PatternLayout pattern="%c{1};%d{mm:ss.SSS} %-10.10c{1}%level{ERROR=!, WARN=?, INFO=-, DEBUG=., TRACE=.} %msg"/>
     </WsLog>
   </Appenders>
   <Loggers>

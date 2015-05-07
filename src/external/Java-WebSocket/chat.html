@@ -1,15 +1,49 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>WebSocket Chat Client</title>
+    <title>JammyPiece Log Client</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
     <script type="text/javascript" src="prototype.js"></script>
 
+    <style>
+        textarea {
+          font-family: Consolas, monospace;
+          font-size: 71%;
+        }
+
+    </style>
     <script type="text/javascript">
+    var logmap = {
+      // Loggers not listed will go to the default textarea (1).
+      "jammypiece": 1,
+      "MidiIn": 2,
+      "Clicker": 3,
+      "Metronome": 4,
+      "MidiOut": 6
+    };
+    var taCount = 6;
         document.observe("dom:loaded", function() {
             function log(text) {
-                $("log").innerHTML = (new Date).getTime() + ": " + (!Object.isUndefined(text) && text !== null ? text.escapeHTML() : "null") + $("log").innerHTML;
+              output("default", (new Date).getTime() + ": " + (!Object.isUndefined(text) && text !== null ? text : "null") + "\n");
+            }
+            function output(where, text) {
+                var i = logmap[where];
+                if (!i) {
+                  i = 1;
+                }
+                var ta = $("log" + i);
+                ta.value = ta.value + (!Object.isUndefined(text) && text !== null ? text : "null");
+                ta.scrollTop = ta.scrollHeight
+            }
+
+            function handleMessage(msg) {
+              var jj = msg.indexOf(";");
+              if (jj == -1) {
+                log(msg);
+              } else {
+                output(msg.substring(0,jj), msg.substring(jj+1) + "\n");
+              }
             }
 
             if (!window.WebSocket) {
@@ -18,23 +52,37 @@
 
             var ws;
 
+            function handleConnect() {
+              var uri = $F("uri");
+              log("Attempting to connect to " + uri);
+              ws = new WebSocket(uri);
+              ws.onopen = function() {
+                  log("[WebSocket#onopen]\n");
+              }
+              ws.onmessage = function(e) {
+                  handleMessage(e.data);
+              }
+              ws.onclose = function() {
+                  log("[WebSocket#onclose]\n");
+                  $("uri", "connect").invoke("enable");
+                  $("disconnect").disable();
+                  ws = null;
+              }
+              $("uri", "connect").invoke("disable");
+              $("disconnect").enable();
+            }
+
+            function tryConnect() {
+              if (!ws) {
+                handleConnect();
+              }
+            }
+
+            setInterval(tryConnect, 2000);
+
             $("uriForm").observe("submit", function(e) {
                 e.stop();
-                ws = new WebSocket($F("uri"));
-                ws.onopen = function() {
-                    log("[WebSocket#onopen]\n");
-                }
-                ws.onmessage = function(e) {
-                    log("[WebSocket#onmessage] Message: '" + e.data + "'\n");
-                }
-                ws.onclose = function() {
-                    log("[WebSocket#onclose]\n");
-                    $("uri", "connect").invoke("enable");
-                    $("disconnect").disable();
-                    ws = null;
-                }
-                $("uri", "connect").invoke("disable");
-                $("disconnect").enable();
+                handleConnect();
             });
 
             $("sendForm").observe("submit", function(e) {
@@ -42,10 +90,15 @@
                 if (ws) {
                     var textField = $("textField");
                     ws.send(textField.value);
-                    log("[WebSocket#send]      Send:    '" + textField.value + "'\n");
                     textField.value = "";
                     textField.focus();
                 }
+            });
+
+            $("clear").observe("click", function(e) {
+              for (ii = 1; ii <= taCount; ii++) {
+                $("log" + ii).value = "";
+              }
             });
 
             $("disconnect").observe("click", function(e) {
@@ -59,8 +112,15 @@
     </script>
   </head>
   <body>
-      <form id="uriForm"><input type="text" id="uri" value="ws://localhost:8887" style="width:200px;"> <input type="submit" id="connect" value="Connect"><input type="button" id="disconnect" value="Disconnect" disabled="disabled"></form><br>
-      <form id="sendForm"><input type="text" id="textField" value="" style="width:200px;"> <input type="submit" value="Send"></form><br>
-      <form><textarea id="log" rows="30" cols="100" style="font-family:monospace; color:red;"></textarea></form><br>
+      <table><tr>
+      <td><form id="uriForm"><input type="text" id="uri" value="ws://localhost:8887" style="width:200px;"> <input type="submit" id="connect" value="Connect"><input type="button" id="disconnect" value="Disconnect" disabled="disabled"></form>
+      <td><form id="sendForm"><input type="text" id="textField" value="" style="width:200px;"> <input type="submit" value="Send"><input type="button" id="clear" value="Clear"></form>
+      </table>
+      <textarea id="log1" rows="30" cols="100"></textarea>
+      <textarea id="log2" rows="30" cols="100"></textarea>
+      <textarea id="log3" rows="30" cols="100"></textarea>
+      <textarea id="log4" rows="30" cols="100"></textarea>
+      <textarea id="log5" rows="30" cols="100"></textarea>
+      <textarea id="log6" rows="30" cols="100"></textarea>
   </body>
 </html>
