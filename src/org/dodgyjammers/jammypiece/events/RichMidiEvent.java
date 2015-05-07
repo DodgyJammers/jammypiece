@@ -36,6 +36,29 @@ public class RichMidiEvent extends MidiEvent
     }
   }
   
+  public static RichMidiEvent makeNoteOff(int xiChan, int xiNoteVal)
+  {
+    try {
+      return new RichMidiEvent(new ShortMessage(ShortMessage.NOTE_OFF, xiChan, xiNoteVal, 0), -1);
+    } catch (InvalidMidiDataException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static RichMidiEvent makeNoteOn(int xiChan, int xiNoteVal)
+  {
+    return makeNoteOn(xiChan, xiNoteVal, 40);
+  }
+
+  public static RichMidiEvent makeNoteOn(int xiChan, int xiNoteVal, int xiVelocity)
+  {
+    try {
+      return new RichMidiEvent(new ShortMessage(ShortMessage.NOTE_ON, xiChan, xiNoteVal, xiVelocity), -1);
+    } catch (InvalidMidiDataException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   /**
    * Is this a note message?
    */
