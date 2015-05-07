@@ -3,8 +3,9 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="extsrc"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="src/external/Log4J/log4j-api-2.0-rc1.jar"/>
-	<classpathentry kind="lib" path="src/external/Log4J/log4j-core-2.0-rc1.jar"/>
+	<classpathentry kind="lib" path="src/external/Log4J/log4j-api-2.2.jar" sourcepath="src/external/Log4J/log4j-api-2.2-sources.jar"/>
+	<classpathentry kind="lib" path="src/external/Log4J/log4j-core-2.2.jar" sourcepath="src/external/Log4J/log4j-core-2.2-sources.jar"/>
 	<classpathentry kind="lib" path="data/cfg"/>
+	<classpathentry kind="lib" path="src/external/Java-WebSocket/java_websocket.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

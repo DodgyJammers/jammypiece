@@ -27,6 +27,7 @@ import org.dodgyjammers.jammypiece.events.KeyChangeEvent;
 import org.dodgyjammers.jammypiece.events.TempoChangeEvent;
 import org.dodgyjammers.jammypiece.events.TimeSignatureChangeEvent;
 import org.dodgyjammers.jammypiece.infra.MachineSpecificConfiguration;
+import org.dodgyjammers.jammypiece.infra.WsLogServer;
 import org.dodgyjammers.jammypiece.infra.MachineSpecificConfiguration.CfgItem;
 import org.dodgyjammers.jammypiece.infra.Producer;
 
@@ -42,6 +43,9 @@ public class jammypiece
   {
     try
     {
+      // Initialise log server.
+      WsLogServer wsLogServer = WsLogServer.INSTANCE;
+      
       // Create all the components and join them up.
 
       Producer<MidiEvent> lSource;
