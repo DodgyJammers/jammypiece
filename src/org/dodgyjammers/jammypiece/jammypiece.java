@@ -24,6 +24,7 @@ import org.dodgyjammers.jammypiece.components.TempoDetector;
 import org.dodgyjammers.jammypiece.components.TimeSignatureDetector;
 import org.dodgyjammers.jammypiece.events.ChordChangeEvent;
 import org.dodgyjammers.jammypiece.events.KeyChangeEvent;
+import org.dodgyjammers.jammypiece.events.RichMidiEvent;
 import org.dodgyjammers.jammypiece.events.TempoChangeEvent;
 import org.dodgyjammers.jammypiece.events.TimeSignatureChangeEvent;
 import org.dodgyjammers.jammypiece.infra.MachineSpecificConfiguration;
@@ -49,7 +50,7 @@ public class jammypiece
       
       // Create all the components and join them up.
 
-      Producer<MidiEvent> lSource;
+      Producer<RichMidiEvent> lSource;
       if ("dummy".equals(MachineSpecificConfiguration.getCfgVal(CfgItem.MIDI_IN_DEVICE, null)))
       {
         lSource = new DummyMidiSource();
@@ -58,22 +59,22 @@ public class jammypiece
       {
         lSource = new MidiIn();
       }
-      List<Producer<MidiEvent>> lSources = Collections.singletonList(lSource);
-      Producer<MidiEvent> lInputSelector = new InputSelector(lSources);
-      Producer<MidiEvent> lJunkFilter = new JunkFilter(lInputSelector);
+      List<Producer<RichMidiEvent>> lSources = Collections.singletonList(lSource);
+      Producer<RichMidiEvent> lInputSelector = new InputSelector(lSources);
+      Producer<RichMidiEvent> lJunkFilter = new JunkFilter(lInputSelector);
       new MidiEventDumper(lJunkFilter, MidiIn.class.getName());
       Producer<KeyChangeEvent> lKeyDetector = new KeyDetector(lJunkFilter);
       Producer<TempoChangeEvent> lTempoDetector = new TempoDetector(lJunkFilter);
       Producer<TimeSignatureChangeEvent> lTimeSigDetector = new TimeSignatureDetector(lJunkFilter, lTempoDetector);
       Metronome lMetronome = new Metronome(lTempoDetector, lTimeSigDetector);
-      Producer<MidiEvent> lClicker = new Clicker(lMetronome);
+      Producer<RichMidiEvent> lClicker = new Clicker(lMetronome);
       Producer<ChordChangeEvent> lChordSelector = new ChordSelector(lJunkFilter, lKeyDetector, lMetronome);
-      Producer<MidiEvent> lAdjuster = new MelodyAdjuster(lJunkFilter, lChordSelector, lMetronome);
-      Producer<MidiEvent> lHarmoniser = new Harmoniser(lAdjuster, lChordSelector, lMetronome);
+      Producer<RichMidiEvent> lAdjuster = new MelodyAdjuster(lJunkFilter, lChordSelector, lMetronome);
+      Producer<RichMidiEvent> lHarmoniser = new Harmoniser(lAdjuster, lChordSelector, lMetronome);
       new MidiEventDumper(lAdjuster, MelodyAdjuster.class.getName());
       new MidiEventDumper(lHarmoniser, Harmoniser.class.getName());
       new MidiEventDumper(lClicker, Clicker.class.getName());
-      List<Producer<MidiEvent>> lOutputs = new LinkedList<>();
+      List<Producer<RichMidiEvent>> lOutputs = new LinkedList<>();
       lOutputs.add(lAdjuster);
       lOutputs.add(lHarmoniser);
       lOutputs.add(lClicker);

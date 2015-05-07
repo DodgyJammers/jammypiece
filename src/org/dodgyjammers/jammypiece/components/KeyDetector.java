@@ -1,8 +1,7 @@
 package org.dodgyjammers.jammypiece.components;
 
-import javax.sound.midi.MidiEvent;
-
 import org.dodgyjammers.jammypiece.events.KeyChangeEvent;
+import org.dodgyjammers.jammypiece.events.RichMidiEvent;
 import org.dodgyjammers.jammypiece.infra.Consumer;
 import org.dodgyjammers.jammypiece.infra.Distributor;
 import org.dodgyjammers.jammypiece.infra.MachineSpecificConfiguration;
@@ -10,11 +9,11 @@ import org.dodgyjammers.jammypiece.infra.MachineSpecificConfiguration.CfgItem;
 import org.dodgyjammers.jammypiece.infra.Producer;
 import org.dodgyjammers.jammypiece.musickb.Key;
 
-public class KeyDetector extends Distributor<KeyChangeEvent> implements Consumer<MidiEvent>
+public class KeyDetector extends Distributor<KeyChangeEvent> implements Consumer<RichMidiEvent>
 {
   private KeyChangeEvent mKeyChangeEvent;
 
-  public KeyDetector(Producer<MidiEvent> xiMelodySource)
+  public KeyDetector(Producer<RichMidiEvent> xiMelodySource)
   {
     xiMelodySource.registerConsumer(this);
 
@@ -31,7 +30,7 @@ public class KeyDetector extends Distributor<KeyChangeEvent> implements Consumer
   }
 
   @Override
-  public void consume(MidiEvent xiItem) throws Exception
+  public void consume(RichMidiEvent xiItem) throws Exception
   {
     // Discard events
   }

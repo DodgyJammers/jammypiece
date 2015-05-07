@@ -1,20 +1,19 @@
 package org.dodgyjammers.jammypiece.components;
 
-import javax.sound.midi.MidiEvent;
 import javax.sound.midi.Receiver;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.dodgyjammers.jammypiece.events.RichMidiEvent;
 import org.dodgyjammers.jammypiece.infra.Consumer;
 import org.dodgyjammers.jammypiece.infra.Producer;
-import org.dodgyjammers.jammypiece.infra.WsLogServer;
 import org.jsresources.midi.DumpReceiver;
 
-public class MidiEventDumper implements Consumer<MidiEvent>
+public class MidiEventDumper implements Consumer<RichMidiEvent>
 {
   private final Receiver mDumpReceiver;
 
-  public MidiEventDumper(Producer<MidiEvent> xiSource, String xiLoggerName)
+  public MidiEventDumper(Producer<RichMidiEvent> xiSource, String xiLoggerName)
   {
     final Logger LOGGER = LogManager.getLogger(xiLoggerName);
     mDumpReceiver = new DumpReceiver(new DumpReceiver.Sink() {
@@ -27,7 +26,7 @@ public class MidiEventDumper implements Consumer<MidiEvent>
   }
 
   @Override
-  public void consume(MidiEvent xiItem) throws Exception
+  public void consume(RichMidiEvent xiItem) throws Exception
   {
     mDumpReceiver.send(xiItem.getMessage(), xiItem.getTick());
   }

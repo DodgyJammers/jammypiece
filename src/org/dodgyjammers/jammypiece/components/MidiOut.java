@@ -5,7 +5,6 @@ import java.util.List;
 import javax.sound.midi.Instrument;
 import javax.sound.midi.MidiDevice;
 import javax.sound.midi.MidiDevice.Info;
-import javax.sound.midi.MidiEvent;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.MidiUnavailableException;
 import javax.sound.midi.Patch;
@@ -13,6 +12,7 @@ import javax.sound.midi.Receiver;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.dodgyjammers.jammypiece.events.RichMidiEvent;
 import org.dodgyjammers.jammypiece.infra.Consumer;
 import org.dodgyjammers.jammypiece.infra.MachineSpecificConfiguration;
 import org.dodgyjammers.jammypiece.infra.MachineSpecificConfiguration.CfgItem;
@@ -21,7 +21,7 @@ import org.dodgyjammers.jammypiece.infra.Producer;
 /**
  * Component to sink MIDI events in jammiepiece and output them to OS.
  */
-public class MidiOut implements Consumer<MidiEvent>
+public class MidiOut implements Consumer<RichMidiEvent>
 {
   private static final Logger LOGGER = LogManager.getLogger();
 
@@ -35,7 +35,7 @@ public class MidiOut implements Consumer<MidiEvent>
    *
    * @throws MidiUnavailableException if the MIDI output device couldn't be opened.
    */
-  public MidiOut(List<Producer<MidiEvent>> xiSources) throws MidiUnavailableException
+  public MidiOut(List<Producer<RichMidiEvent>> xiSources) throws MidiUnavailableException
   {
     // Get the configured MIDI device (or the default device if none is configured).
     String lConfiguredDeviceStr = MachineSpecificConfiguration.getCfgVal(CfgItem.MIDI_OUT_DEVICE, null);
@@ -90,14 +90,14 @@ public class MidiOut implements Consumer<MidiEvent>
     dumpDeviceDetails();
 
     // Register as a consumer of events from all sources.
-    for (Producer<MidiEvent> lSource : xiSources)
+    for (Producer<RichMidiEvent> lSource : xiSources)
     {
       lSource.registerConsumer(this);
     }
   }
 
   @Override
-  public void consume(MidiEvent xiItem) throws Exception
+  public void consume(RichMidiEvent xiItem) throws Exception
   {
     mMidiOut.send(xiItem.getMessage(), xiItem.getTick());
   }

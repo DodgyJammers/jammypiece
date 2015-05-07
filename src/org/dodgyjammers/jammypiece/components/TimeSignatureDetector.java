@@ -1,7 +1,6 @@
 package org.dodgyjammers.jammypiece.components;
 
-import javax.sound.midi.MidiEvent;
-
+import org.dodgyjammers.jammypiece.events.RichMidiEvent;
 import org.dodgyjammers.jammypiece.events.TempoChangeEvent;
 import org.dodgyjammers.jammypiece.events.TimeSignatureChangeEvent;
 import org.dodgyjammers.jammypiece.infra.Consumer;
@@ -17,7 +16,7 @@ import org.dodgyjammers.jammypiece.musickb.TimeSignature;
  * Not at all clear that this component has all the inputs that it needs.  I'm expecting it to be a dummy component
  * that simply reports a configured value.
  */
-public class TimeSignatureDetector extends Distributor<TimeSignatureChangeEvent> implements Consumer<MidiEvent>
+public class TimeSignatureDetector extends Distributor<TimeSignatureChangeEvent> implements Consumer<RichMidiEvent>
 {
 
   private TimeSignatureChangeEvent mTimeSigEvent;
@@ -30,7 +29,7 @@ public class TimeSignatureDetector extends Distributor<TimeSignatureChangeEvent>
    *
    * This dummy version just distributes the configured time signature.
    */
-  public TimeSignatureDetector(Producer<MidiEvent> xiMelodySource,
+  public TimeSignatureDetector(Producer<RichMidiEvent> xiMelodySource,
                                Producer<TempoChangeEvent> xiTempoSource)
   {
     xiMelodySource.registerConsumer(this);
@@ -48,7 +47,7 @@ public class TimeSignatureDetector extends Distributor<TimeSignatureChangeEvent>
   }
 
   @Override
-  public void consume(MidiEvent xiItem) throws Exception
+  public void consume(RichMidiEvent xiItem) throws Exception
   {
     // Discard melody events
   }

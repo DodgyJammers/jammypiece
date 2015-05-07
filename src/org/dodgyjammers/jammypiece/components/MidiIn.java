@@ -2,7 +2,6 @@ package org.dodgyjammers.jammypiece.components;
 
 import javax.sound.midi.MidiDevice;
 import javax.sound.midi.MidiDevice.Info;
-import javax.sound.midi.MidiEvent;
 import javax.sound.midi.MidiMessage;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.MidiUnavailableException;
@@ -11,15 +10,15 @@ import javax.sound.midi.Transmitter;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.dodgyjammers.jammypiece.events.RichMidiEvent;
 import org.dodgyjammers.jammypiece.infra.Distributor;
 import org.dodgyjammers.jammypiece.infra.MachineSpecificConfiguration;
 import org.dodgyjammers.jammypiece.infra.MachineSpecificConfiguration.CfgItem;
-import org.dodgyjammers.jammypiece.musickb.RichMidiEvent;
 
 /**
  * Component to sink MIDI events in jammiepiece and output them to OS.
  */
-public class MidiIn extends Distributor<MidiEvent> implements Receiver
+public class MidiIn extends Distributor<RichMidiEvent> implements Receiver
 {
   private static final Logger LOGGER = LogManager.getLogger();
 

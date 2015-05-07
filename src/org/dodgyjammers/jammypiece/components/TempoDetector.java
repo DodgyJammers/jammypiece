@@ -1,17 +1,16 @@
 package org.dodgyjammers.jammypiece.components;
 
-import javax.sound.midi.MidiEvent;
-
+import org.dodgyjammers.jammypiece.events.RichMidiEvent;
 import org.dodgyjammers.jammypiece.events.TempoChangeEvent;
 import org.dodgyjammers.jammypiece.infra.Consumer;
 import org.dodgyjammers.jammypiece.infra.Distributor;
 import org.dodgyjammers.jammypiece.infra.Producer;
 
-public class TempoDetector extends Distributor<TempoChangeEvent> implements Consumer<MidiEvent>
+public class TempoDetector extends Distributor<TempoChangeEvent> implements Consumer<RichMidiEvent>
 {
   private TempoChangeEvent mTempo = new TempoChangeEvent(500000, -1);
 
-  public TempoDetector(Producer<MidiEvent> xiMelodySource)
+  public TempoDetector(Producer<RichMidiEvent> xiMelodySource)
   {
     xiMelodySource.registerConsumer(this);
   }
@@ -24,7 +23,7 @@ public class TempoDetector extends Distributor<TempoChangeEvent> implements Cons
   }
 
   @Override
-  public void consume(MidiEvent xiItem) throws Exception
+  public void consume(RichMidiEvent xiItem) throws Exception
   {
     // Discard events
   }

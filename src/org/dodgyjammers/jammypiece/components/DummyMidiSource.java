@@ -1,16 +1,16 @@
 package org.dodgyjammers.jammypiece.components;
 
-import javax.sound.midi.MidiEvent;
 import javax.sound.midi.ShortMessage;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.dodgyjammers.jammypiece.events.RichMidiEvent;
 import org.dodgyjammers.jammypiece.infra.Distributor;
 
 /**
  * Component to receive MIDI events from the OS and distribute them to registered parties.
  */
-public class DummyMidiSource extends Distributor<MidiEvent> implements Runnable
+public class DummyMidiSource extends Distributor<RichMidiEvent> implements Runnable
 {
   private static final Logger LOGGER = LogManager.getLogger();
 
@@ -40,12 +40,14 @@ public class DummyMidiSource extends Distributor<MidiEvent> implements Runnable
 
     try
     {
-      MidiEvent[] lEvents = {new MidiEvent(new ShortMessage(ShortMessage.NOTE_ON,  0, 60, 40), -1),
-                             new MidiEvent(new ShortMessage(ShortMessage.NOTE_OFF, 0, 60, 40), -1),
-                             new MidiEvent(new ShortMessage(ShortMessage.NOTE_ON,  0, 64, 40), -1),
-                             new MidiEvent(new ShortMessage(ShortMessage.NOTE_OFF, 0, 64, 40), -1),
-                             new MidiEvent(new ShortMessage(ShortMessage.NOTE_ON,  0, 67, 40), -1),
-                             new MidiEvent(new ShortMessage(ShortMessage.NOTE_OFF, 0, 67, 40), -1)};
+      RichMidiEvent[] lEvents = {
+          new RichMidiEvent(new ShortMessage(ShortMessage.NOTE_ON,  0, 60, 40), -1),
+          new RichMidiEvent(new ShortMessage(ShortMessage.NOTE_OFF, 0, 60, 40), -1),
+          new RichMidiEvent(new ShortMessage(ShortMessage.NOTE_ON,  0, 64, 40), -1),
+          new RichMidiEvent(new ShortMessage(ShortMessage.NOTE_OFF, 0, 64, 40), -1),
+          new RichMidiEvent(new ShortMessage(ShortMessage.NOTE_ON,  0, 67, 40), -1),
+          new RichMidiEvent(new ShortMessage(ShortMessage.NOTE_OFF, 0, 67, 40), -1)
+      };
 
       int lEvent = 0;
       boolean lPlaying = false;

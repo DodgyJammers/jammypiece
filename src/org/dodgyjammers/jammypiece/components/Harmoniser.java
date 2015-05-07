@@ -1,19 +1,18 @@
 package org.dodgyjammers.jammypiece.components;
 
-import javax.sound.midi.MidiEvent;
-
 import org.dodgyjammers.jammypiece.events.ChordChangeEvent;
+import org.dodgyjammers.jammypiece.events.RichMidiEvent;
 import org.dodgyjammers.jammypiece.events.TickEvent;
 import org.dodgyjammers.jammypiece.infra.Consumer;
 import org.dodgyjammers.jammypiece.infra.Distributor;
 import org.dodgyjammers.jammypiece.infra.Producer;
 
-public class Harmoniser extends Distributor<MidiEvent> implements Consumer<MidiEvent>
+public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<RichMidiEvent>
 {
   private final ChordListener mChordListener;
   private final MetronomeListener mMetronomeListener;
 
-  public Harmoniser(Producer<MidiEvent> xiMelodySource,
+  public Harmoniser(Producer<RichMidiEvent> xiMelodySource,
                     Producer<ChordChangeEvent> xiChordSource,
                     Producer<TickEvent> xiMetronome)
   {
@@ -26,7 +25,7 @@ public class Harmoniser extends Distributor<MidiEvent> implements Consumer<MidiE
   }
 
   @Override
-  public void consume(MidiEvent xiItem)
+  public void consume(RichMidiEvent xiItem)
   {
     // Discard melody events.
   }

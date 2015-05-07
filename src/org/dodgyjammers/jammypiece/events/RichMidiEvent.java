@@ -1,4 +1,4 @@
-package org.dodgyjammers.jammypiece.musickb;
+package org.dodgyjammers.jammypiece.events;
 
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiEvent;

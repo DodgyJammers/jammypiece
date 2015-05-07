@@ -1,11 +1,11 @@
 package org.dodgyjammers.jammypiece.components;
 
 import javax.sound.midi.InvalidMidiDataException;
-import javax.sound.midi.MidiEvent;
 import javax.sound.midi.ShortMessage;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.dodgyjammers.jammypiece.events.RichMidiEvent;
 import org.dodgyjammers.jammypiece.events.TickEvent;
 import org.dodgyjammers.jammypiece.infra.Consumer;
 import org.dodgyjammers.jammypiece.infra.Distributor;
@@ -16,7 +16,7 @@ import org.dodgyjammers.jammypiece.infra.Producer;
 /**
  * Clicker component, converts internal metronome ticks into audible events.
  */
-public class Clicker extends Distributor<MidiEvent> implements Consumer<TickEvent>
+public class Clicker extends Distributor<RichMidiEvent> implements Consumer<TickEvent>
 {
   private static final Logger LOGGER = LogManager.getLogger();
 
@@ -39,12 +39,12 @@ public class Clicker extends Distributor<MidiEvent> implements Consumer<TickEven
       {
         if (xiTick.mStress)
         {
-          distribute(new MidiEvent(new ShortMessage(ShortMessage.NOTE_ON, CHANNEL, STRESSED, 40), xiTick.mTimestamp));
+          distribute(new RichMidiEvent(new ShortMessage(ShortMessage.NOTE_ON, CHANNEL, STRESSED, 40), xiTick.mTimestamp));
           //distribute(new MidiEvent(new ShortMessage(ShortMessage.NOTE_OFF, CHANNEL, STRESSED, 40), xiTick.mTimestamp + 100000));
         }
         else
         {
-          distribute(new MidiEvent(new ShortMessage(ShortMessage.NOTE_ON, CHANNEL, UNSTRESSED, 40), xiTick.mTimestamp));
+          distribute(new RichMidiEvent(new ShortMessage(ShortMessage.NOTE_ON, CHANNEL, UNSTRESSED, 40), xiTick.mTimestamp));
           //distribute(new MidiEvent(new ShortMessage(ShortMessage.NOTE_OFF, CHANNEL, UNSTRESSED, 40), xiTick.mTimestamp + 100000));
         }
       }
