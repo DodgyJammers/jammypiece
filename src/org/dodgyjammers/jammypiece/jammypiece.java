@@ -10,6 +10,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.dodgyjammers.jammypiece.components.ChordSelector;
 import org.dodgyjammers.jammypiece.components.Clicker;
+import org.dodgyjammers.jammypiece.components.CommandHandler;
 import org.dodgyjammers.jammypiece.components.DummyMidiSource;
 import org.dodgyjammers.jammypiece.components.Harmoniser;
 import org.dodgyjammers.jammypiece.components.InputSelector;
@@ -72,12 +73,18 @@ public class jammypiece
       new MidiEventDumper(lAdjuster, MelodyAdjuster.class.getName());
       new MidiEventDumper(lHarmoniser, Harmoniser.class.getName());
       new MidiEventDumper(lClicker, Clicker.class.getName());
+
+      CommandHandler lCommandHandler = new CommandHandler();
+      WsLogServer.INSTANCE.registerConsumer(lCommandHandler);
+      
       List<Producer<RichMidiEvent>> lOutputs = new LinkedList<>();
       lOutputs.add(lAdjuster);
       lOutputs.add(lHarmoniser);
       lOutputs.add(lClicker);
+      lOutputs.add(lCommandHandler);
       MidiOut lMidiOut = new MidiOut(lOutputs);
       lMetronome.setClockSource(lMidiOut);
+      
 
       // Start all the components that need to be started.
       lSource.start();
