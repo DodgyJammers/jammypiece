@@ -45,6 +45,7 @@ public class jammypiece
     {
       // Initialise log server.
       WsLogServer wsLogServer = WsLogServer.INSTANCE;
+      Thread.sleep(2000);
       
       // Create all the components and join them up.
 
@@ -60,7 +61,7 @@ public class jammypiece
       List<Producer<MidiEvent>> lSources = Collections.singletonList(lSource);
       Producer<MidiEvent> lInputSelector = new InputSelector(lSources);
       Producer<MidiEvent> lJunkFilter = new JunkFilter(lInputSelector);
-      new MidiEventDumper(lJunkFilter);
+      new MidiEventDumper(lJunkFilter, MidiIn.class.getName());
       Producer<KeyChangeEvent> lKeyDetector = new KeyDetector(lJunkFilter);
       Producer<TempoChangeEvent> lTempoDetector = new TempoDetector(lJunkFilter);
       Producer<TimeSignatureChangeEvent> lTimeSigDetector = new TimeSignatureDetector(lJunkFilter, lTempoDetector);
@@ -69,7 +70,9 @@ public class jammypiece
       Producer<ChordChangeEvent> lChordSelector = new ChordSelector(lJunkFilter, lKeyDetector, lMetronome);
       Producer<MidiEvent> lAdjuster = new MelodyAdjuster(lJunkFilter, lChordSelector, lMetronome);
       Producer<MidiEvent> lHarmoniser = new Harmoniser(lAdjuster, lChordSelector, lMetronome);
-      new MidiEventDumper(lClicker);
+      new MidiEventDumper(lAdjuster, MelodyAdjuster.class.getName());
+      new MidiEventDumper(lHarmoniser, Harmoniser.class.getName());
+      new MidiEventDumper(lClicker, Clicker.class.getName());
       List<Producer<MidiEvent>> lOutputs = new LinkedList<>();
       lOutputs.add(lAdjuster);
       lOutputs.add(lHarmoniser);
