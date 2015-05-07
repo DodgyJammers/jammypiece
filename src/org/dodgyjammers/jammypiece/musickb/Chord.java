@@ -1,7 +1,15 @@
 package org.dodgyjammers.jammypiece.musickb;
 
+
 public class Chord
 {
+  public static final Chord CHORD_I = new Chord(1);
+  public static final Chord CHORD_ii = new Chord(2);
+  public static final Chord CHORD_iii = new Chord(3);
+  public static final Chord CHORD_IV = new Chord(4);
+  public static final Chord CHORD_V = new Chord(5);
+  public static final Chord CHORD_vi = new Chord(6);
+
   /**
    * The chord.
    *
