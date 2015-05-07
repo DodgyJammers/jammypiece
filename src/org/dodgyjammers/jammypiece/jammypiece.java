@@ -46,7 +46,7 @@ public class jammypiece
     {
       // Initialise log server.
       WsLogServer wsLogServer = WsLogServer.INSTANCE;
-      Thread.sleep(2000);
+      Thread.sleep(5000);
       
       // Create all the components and join them up.
 

@@ -43,6 +43,14 @@ public class RichMidiEvent extends MidiEvent
     return mNote != -1;
   }
 
+  public int getNote() {
+    return mNote;
+  }
+  
+  public int getVelocity() {
+    return mVelocity;
+  }
+
   /**
    * Same event, but with a different note value. Only call this if it's a note
    * on/off message!
