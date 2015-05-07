@@ -10,30 +10,9 @@ public class Chord
   public final int mChordNum;
 
   /**
-   * The inversion.
+   * The base note, as a note number from the key we're in - NOT from the chord that's being played.
    */
-  public final Inversion mInversion;
-
-  /**
-   * Inversion (chord position).
-   */
-  public enum Inversion
-  {
-    /**
-     * With the tonic at the bottom of the chord.
-     */
-    A,
-
-    /**
-     * With the 3rd at the bottom of the chord.
-     */
-    B,
-
-    /**
-     * With the 5th at the bottom of the chord.
-     */
-    C;
-  }
+  public final int mBaseNoteNum;
 
   /**
    * Whether the chord is major or minor.
@@ -54,6 +33,17 @@ public class Chord
   public static final int CHORD_SUS  = 0x10;
 
   /**
+   * Create a chord in root position with no specials.
+   *
+   * @param xiChordNum - the chord number.
+   */
+  public Chord(int xiChordNum)
+  {
+    this(xiChordNum, xiChordNum, xiChordNum == 1 || xiChordNum == 4 || xiChordNum == 5, 0);
+    assert(xiChordNum != 7);
+  }
+
+  /**
    * Create a chord.
    *
    * @param xiChordNum  - the chord number.
@@ -61,10 +51,10 @@ public class Chord
    * @param xiMajor     - whether the chord is major (true) or minor (false).
    * @param xiFlags     - flags that modify the chord.
    */
-  public Chord(int xiChordNum, Inversion xiInversion, boolean xiMajor, int xiFlags)
+  public Chord(int xiChordNum, int xiBaseNoteNum, boolean xiMajor, int xiFlags)
   {
     mChordNum = xiChordNum;
-    mInversion = xiInversion;
+    mBaseNoteNum = xiBaseNoteNum;
     mMajor = xiMajor;
     mFlags = xiFlags;
   }
