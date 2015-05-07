@@ -9,7 +9,7 @@ import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 
-public class WsLogServer extends WebSocketServer
+public class WsLogServer extends WebSocketServer implements Producer<String>
 {
   private static final Logger LOGGER = LogManager.getLogger();
 
@@ -17,6 +17,8 @@ public class WsLogServer extends WebSocketServer
   
   private static Object sClientConnectedSema4 = new Object();
   private static boolean sFirstClientConnected = false;
+  
+  private CommandDistributor mDistributor = new CommandDistributor();
   
   public static void init() {
     System.out.println("Waiting for connection (up to 10 seconds)...");
@@ -52,8 +54,9 @@ public class WsLogServer extends WebSocketServer
   }
 
   @Override
-  public void onMessage(WebSocket arg0, String arg1) {
-    LOGGER.warn("JammyPiece received command: " + arg1);
+  public void onMessage(WebSocket arg0, String command) {
+    LOGGER.warn("JammyPiece received command: " + command);
+    mDistributor.distribute(command);
   }
 
   @Override
@@ -81,5 +84,18 @@ public class WsLogServer extends WebSocketServer
                   }
           }
   }
+  
+  
 
+  private static class CommandDistributor extends Distributor<String>
+  {
+    
+  }
+
+
+
+  @Override
+  public void registerConsumer(Consumer<String> xiConsumer) {
+    mDistributor.registerConsumer(xiConsumer);
+  }
 }
