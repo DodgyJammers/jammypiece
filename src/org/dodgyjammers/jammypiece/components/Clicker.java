@@ -39,12 +39,12 @@ public class Clicker extends Distributor<RichMidiEvent> implements Consumer<Tick
       {
         if (xiTick.mStress)
         {
-          distribute(new RichMidiEvent(new ShortMessage(ShortMessage.NOTE_ON, CHANNEL, STRESSED, 40), xiTick.mTimestamp));
+          distribute(new RichMidiEvent(new ShortMessage(ShortMessage.NOTE_ON, CHANNEL, STRESSED, 40), -1));
           //distribute(new MidiEvent(new ShortMessage(ShortMessage.NOTE_OFF, CHANNEL, STRESSED, 40), xiTick.mTimestamp + 100000));
         }
         else
         {
-          distribute(new RichMidiEvent(new ShortMessage(ShortMessage.NOTE_ON, CHANNEL, UNSTRESSED, 40), xiTick.mTimestamp));
+          distribute(new RichMidiEvent(new ShortMessage(ShortMessage.NOTE_ON, CHANNEL, UNSTRESSED, 40), -1));
           //distribute(new MidiEvent(new ShortMessage(ShortMessage.NOTE_OFF, CHANNEL, UNSTRESSED, 40), xiTick.mTimestamp + 100000));
         }
       }
