@@ -66,4 +66,28 @@ public class Chord
     mMajor = xiMajor;
     mFlags = xiFlags;
   }
+  
+  public int getRootOffset()
+  {
+	switch (mChordNum)
+	{
+	  case 1: return 0;
+	  case 2: return 2;
+	  case 3: return 4;
+	  case 4: return 5;
+	  case 5: return 7;
+	  case 6: return 9;
+	}
+	
+	throw new RuntimeException("Oops");
+  }
+  
+  public int getBaseNote()
+  {
+	int lNote = 0;
+	
+	lNote = mBaseNoteNum;
+	
+	return lNote;
+  }
 }
