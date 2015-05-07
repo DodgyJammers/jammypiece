@@ -14,6 +14,7 @@ import org.apache.logging.log4j.Logger;
 import org.dodgyjammers.jammypiece.infra.Distributor;
 import org.dodgyjammers.jammypiece.infra.MachineSpecificConfiguration;
 import org.dodgyjammers.jammypiece.infra.MachineSpecificConfiguration.CfgItem;
+import org.dodgyjammers.jammypiece.musickb.RichMidiEvent;
 
 /**
  * Component to sink MIDI events in jammiepiece and output them to OS.
@@ -105,6 +106,6 @@ public class MidiIn extends Distributor<MidiEvent> implements Receiver
   public void send(MidiMessage xiMessage, long xiTimestamp)
   {
     LOGGER.debug("Event received");
-    distribute(new MidiEvent(xiMessage, -1));
+    distribute(new RichMidiEvent(xiMessage, -1));
   }
 }
