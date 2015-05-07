@@ -39,14 +39,12 @@ public class jammypiece
 {
   private static final Logger LOGGER = LogManager.getLogger();
 
-  @SuppressWarnings("unused")
   public static void main(String[] args)
   {
     try
     {
       // Initialise log server.
-      WsLogServer wsLogServer = WsLogServer.INSTANCE;
-      Thread.sleep(5000);
+      WsLogServer.init();
       
       // Create all the components and join them up.
 
