@@ -1,3 +1,7 @@
+# Jammypiece Architecture
+
+![architecture](Architecture.jpg)
+
 Here's a brief description of the blocks on the architecture diagram.
 
 - MIDI in - get MIDI events from OS and add to MIDI event bus (central horizontal line).
