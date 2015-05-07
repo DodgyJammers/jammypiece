@@ -53,6 +53,15 @@ public class MachineSpecificConfiguration
     CLICKER_CHANNEL,
     CLICKER_STRESSED_NOTE,
     CLICKER_UNSTRESSED_NOTE,
+
+    /**
+     * General channel configuration.
+     */
+    MAX_SOLO_CHANNEL,
+    BASS_CHANNEL,
+    CHORD_CHANNEL,
+    EXTRA_MELODY_CHANNEL,
+    DRUM_CHANNEL,
   }
 
   private static final Properties MACHINE_PROPERTIES = new Properties();
