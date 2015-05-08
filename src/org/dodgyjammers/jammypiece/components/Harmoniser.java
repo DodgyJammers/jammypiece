@@ -79,10 +79,10 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
         playNewBassNote();
       }
 
-	    if (xiItem.mStress)
-	    {
-	      playNewChord();
-	    }
+      if (xiItem.mStress)
+      {
+        playNewChord();
+      }
     }
   }
 
@@ -111,6 +111,8 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
 
 	  //iterate over the notes in the new chord and play them all (for now at once
     // and at the same noise.
+    //
+    // Play some variation of the new harmony
     for(int note: getNotes(mNewChord))
     {
 	    distribute(RichMidiEvent.makeNoteOn(mHarmonyChannel, note));
@@ -143,7 +145,12 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
 
   private int getPlayableBass(Chord xiChord)
   {
-    int lBassNote = xiChord.getBassNote() + mKey.mTonicNoteNum;
+    int lBassNote = xiChord.getBassNote() + mKey.mTonicNoteNum - 24;
     return lBassNote;
+  }
+
+  private void arpeggiation()
+  {
+
   }
 }
