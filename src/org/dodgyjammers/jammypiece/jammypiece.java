@@ -4,8 +4,6 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.sound.midi.MidiEvent;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.dodgyjammers.jammypiece.components.ChordSelector;
@@ -29,9 +27,9 @@ import org.dodgyjammers.jammypiece.events.RichMidiEvent;
 import org.dodgyjammers.jammypiece.events.TempoChangeEvent;
 import org.dodgyjammers.jammypiece.events.TimeSignatureChangeEvent;
 import org.dodgyjammers.jammypiece.infra.MachineSpecificConfiguration;
-import org.dodgyjammers.jammypiece.infra.WsLogServer;
 import org.dodgyjammers.jammypiece.infra.MachineSpecificConfiguration.CfgItem;
 import org.dodgyjammers.jammypiece.infra.Producer;
+import org.dodgyjammers.jammypiece.infra.WsLogServer;
 
 /**
  * Entry point for jammypiece.
@@ -46,7 +44,7 @@ public class jammypiece
     {
       // Initialise log server.
       WsLogServer.init();
-      
+
       // Create all the components and join them up.
 
       Producer<RichMidiEvent> lSource;
@@ -69,14 +67,14 @@ public class jammypiece
       Producer<RichMidiEvent> lClicker = new Clicker(lMetronome);
       Producer<ChordChangeEvent> lChordSelector = new ChordSelector(lJunkFilter, lKeyDetector, lMetronome);
       Producer<RichMidiEvent> lAdjuster = new MelodyAdjuster(lJunkFilter, lChordSelector, lMetronome);
-      Producer<RichMidiEvent> lHarmoniser = new Harmoniser(lAdjuster, lChordSelector, lKeyDetector, lMetronome);
+      Producer<RichMidiEvent> lHarmoniser = new Harmoniser(lAdjuster, lChordSelector, lKeyDetector, lMetronome, lTimeSigDetector);
       new MidiEventDumper(lAdjuster, MelodyAdjuster.class.getName());
       new MidiEventDumper(lHarmoniser, Harmoniser.class.getName());
       new MidiEventDumper(lClicker, Clicker.class.getName());
 
       CommandHandler lCommandHandler = new CommandHandler();
       WsLogServer.INSTANCE.registerConsumer(lCommandHandler);
-      
+
       List<Producer<RichMidiEvent>> lOutputs = new LinkedList<>();
       lOutputs.add(lAdjuster);
       lOutputs.add(lHarmoniser);
@@ -84,7 +82,7 @@ public class jammypiece
       lOutputs.add(lCommandHandler);
       MidiOut lMidiOut = new MidiOut(lOutputs);
       lMetronome.setClockSource(lMidiOut);
-      
+
 
       // Start all the components that need to be started.
       lSource.start();
