@@ -9,6 +9,7 @@ import org.apache.logging.log4j.Logger;
 import org.dodgyjammers.jammypiece.components.ChordSelector;
 import org.dodgyjammers.jammypiece.components.Clicker;
 import org.dodgyjammers.jammypiece.components.CommandHandler;
+import org.dodgyjammers.jammypiece.components.Drummer;
 import org.dodgyjammers.jammypiece.components.DummyMidiSource;
 import org.dodgyjammers.jammypiece.components.Harmoniser;
 import org.dodgyjammers.jammypiece.components.InputSelector;
@@ -54,15 +55,22 @@ public class jammypiece
       // Create all the components and join them up.
 
       Producer<RichMidiEvent> lSource;
-      if ("dummy".equals(MachineSpecificConfiguration.getCfgVal(CfgItem.MIDI_IN_DEVICE, null)))
+      String lSourceName = MachineSpecificConfiguration.getCfgVal(CfgItem.MIDI_IN_DEVICE, null);
+      List<Producer<RichMidiEvent>> lSources;
+      if ("dummy".equals(lSourceName))
       {
-        lSource = new DummyMidiSource();
+        lSources = Collections.singletonList((Producer<RichMidiEvent>)new DummyMidiSource());
+      }
+      else if ("null".equals(lSourceName))
+      {
+        lSources = Collections.emptyList(); 
       }
       else
       {
-        lSource = new MidiIn();
+        MidiIn lMidiIn = new MidiIn();
+        lSources = Collections.singletonList((Producer<RichMidiEvent>)lMidiIn);
+        lMidiIn.start();
       }
-      List<Producer<RichMidiEvent>> lSources = Collections.singletonList(lSource);
       Producer<RichMidiEvent> lInputSelector = new InputSelector(lSources);
       Producer<RichMidiEvent> lJunkFilter = new JunkFilter(lInputSelector);
       new MidiEventDumper(lJunkFilter, MidiIn.class.getName());
@@ -74,6 +82,7 @@ public class jammypiece
       Producer<ChordChangeEvent> lChordSelector = new ChordSelector(lJunkFilter, lKeyDetector, lMetronome);
       Producer<RichMidiEvent> lAdjuster = new MelodyAdjuster(lJunkFilter, lChordSelector, lMetronome);
       Producer<RichMidiEvent> lHarmoniser = new Harmoniser(lAdjuster, lChordSelector, lKeyDetector, lMetronome, lTimeSigDetector);
+      Producer<RichMidiEvent> lDrummer = new Drummer(lMetronome, lChordSelector);
       new MidiEventDumper(lAdjuster, MelodyAdjuster.class.getName());
       new MidiEventDumper(lHarmoniser, Harmoniser.class.getName());
       new MidiEventDumper(lClicker, Clicker.class.getName());
@@ -85,6 +94,7 @@ public class jammypiece
       lOutputs.add(lAdjuster);
       lOutputs.add(lHarmoniser);
       lOutputs.add(lClicker);
+      lOutputs.add(lDrummer);
       lOutputs.add(lCommandHandler);
       MidiOut lMidiOut = new MidiOut(Collections.singletonList((Producer<RichMidiEvent>)lOutputs));
       
@@ -95,7 +105,6 @@ public class jammypiece
 
 
       // Start all the components that need to be started.
-      lSource.start();
       lMetronome.start();
       LOGGER.info("jammypiece started");
 
