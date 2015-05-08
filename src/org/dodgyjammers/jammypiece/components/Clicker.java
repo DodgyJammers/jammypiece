@@ -42,7 +42,7 @@ public class Clicker extends Distributor<RichMidiEvent> implements Consumer<Tick
           distribute(new RichMidiEvent(new ShortMessage(ShortMessage.NOTE_ON, CHANNEL, STRESSED, 40), -1));
           //distribute(new MidiEvent(new ShortMessage(ShortMessage.NOTE_OFF, CHANNEL, STRESSED, 40), xiTick.mTimestamp + 100000));
         }
-        else
+        else if (xiTick.mTickInBeat == 0)
         {
           distribute(new RichMidiEvent(new ShortMessage(ShortMessage.NOTE_ON, CHANNEL, UNSTRESSED, 40), -1));
           //distribute(new MidiEvent(new ShortMessage(ShortMessage.NOTE_OFF, CHANNEL, UNSTRESSED, 40), xiTick.mTimestamp + 100000));

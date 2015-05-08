@@ -51,6 +51,11 @@ public class Metronome extends Distributor<TickEvent> implements Consumer<TempoC
     }
   }
 
+  private long GetTickInterval()
+  {
+    return mTempo * 1000 / mTimeSignature.mTicksPerBeat;
+  }
+
   @Override
   public void run()
   {
@@ -58,24 +63,26 @@ public class Metronome extends Distributor<TickEvent> implements Consumer<TempoC
     {
       // Generate a steady beat.
       int lBeatNum = 0;
-      long lNextTickTime = System.nanoTime() + (mTempo * 1000);
+      int lTickNum = 0;
+      long lNextTickTime = System.nanoTime() + GetTickInterval();
 
       while (true)
       {
         long lSleepFor = lNextTickTime - System.nanoTime();
         Thread.sleep(lSleepFor / 1000000, (int)(lSleepFor % 1000000));
 
-        if (mTimeSignature.mStressPattern.charAt(lBeatNum) == '-')
-        {
-          distribute(new TickEvent(true, mMidiOut.getMicrosecondPosition()));
-        }
-        else
-        {
-          distribute(new TickEvent(false, mMidiOut.getMicrosecondPosition()));
-        }
 
-        lBeatNum = (lBeatNum + 1) % mTimeSignature.mNumBeats;
-        lNextTickTime += mTempo * 1000;
+        boolean lStressed;
+        lStressed = ((lTickNum == 0) && (mTimeSignature.mStressPattern.charAt(lBeatNum) == '-'));
+        distribute(new TickEvent(lStressed,
+                                 mTimeSignature.mTicksPerBeat,
+                                 lTickNum,
+                                 mMidiOut.getMicrosecondPosition()));
+
+        lTickNum = (lTickNum + 1) % mTimeSignature.mTicksPerBeat;
+        if (lTickNum == 0)
+          lBeatNum = (lBeatNum + 1) % mTimeSignature.mNumBeats;
+        lNextTickTime += GetTickInterval();
       }
     }
     catch (InterruptedException lEx)
