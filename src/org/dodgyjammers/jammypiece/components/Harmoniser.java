@@ -37,9 +37,11 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
   private int mNumBeats;
   private int mArpeggNum = 0;
   private int mSection;
+
   private boolean mDuet = false;
 
   private String[] mHarmonyStyle = new String[2];
+  private int[] mStructure;
 
   private volatile Key mKey;
 
@@ -114,11 +116,13 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
 
   private class ChordListener implements Consumer<ChordChangeEvent>
   {
+
     @Override
     public void consume(ChordChangeEvent xiItem)
     {
       mNewChord = xiItem.mChord;
       mSection = xiItem.mSection;
+      mStructure = xiItem.mStructure;
     }
   }
 
@@ -237,7 +241,7 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
 
   private void playHarmony(int xiSection, TickEvent xiItem)
   {
-    String lStyle = mHarmonyStyle[mSection-1];
+    String lStyle = mHarmonyStyle[mStructure[mSection] - 1];
 
     mDuet = false;
 
