@@ -32,7 +32,7 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
   private int mHarmonyChannel;
   private int mBassChannel;
 
-  private int mArpeggNum;
+  private int mArpeggNum =0;
 
   private volatile Key mKey;
 
@@ -57,7 +57,6 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
     mTimeSigListener = new TimeSignatureListener();
     mHarmonyChannel = MachineSpecificConfiguration.getCfgVal(CfgItem.CHORD_CHANNEL, 0);
     mBassChannel = MachineSpecificConfiguration.getCfgVal(CfgItem.BASS_CHANNEL, 0);
-    mArpeggNum = 0;
 
     xiMelodySource.registerConsumer(this);
     xiChordSource.registerConsumer(mChordListener);
@@ -90,10 +89,6 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
       if(xiItem.mTickInBeat == 0)
       {
         playNewBassNote();
-      }
-
-      if (xiItem.mTickInBeat == 0)
-      {
         arpeggiation();
       }
     }
@@ -160,18 +155,25 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
 
   private void arpeggiation()
   {
-
+    System.out.println(mNumBeats);
+    System.out.println(mArpeggNum);
     if (mArpeggNum < mNumBeats)
     {
-        if (mCurrentChord != null)
-        {
-          stopChord(mCurrentChord, mHarmonyChannel);
-        }
-      distribute(RichMidiEvent.makeNoteOn(mHarmonyChannel, getNotes(mCurrentChord)[mArpeggNum]));
-      mArpeggNum++;
+      System.out.println("Arpegg num is less than num beats");
+      if (mCurrentChord != null)
+      {
+        System.out.println("Stopping Current Chord");
+        stopChord(mCurrentChord, mHarmonyChannel);
+      }
+      System.out.println("Playing New Chord for:");
+      System.out.println(getNotes(mNewChord)[mArpeggNum]);
+      distribute(RichMidiEvent.makeNoteOn(mHarmonyChannel, getNotes(mNewChord)[mArpeggNum]));
+      System.out.println("incrementing arpegg num");
+      mArpeggNum = mArpeggNum + 1;
     }
     else
     {
+      System.out.println("ArpeggNum is too high resetting to zero");
       mArpeggNum = 0;
       arpeggiation();
     }
