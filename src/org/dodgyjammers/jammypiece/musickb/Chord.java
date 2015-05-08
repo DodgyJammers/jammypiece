@@ -3,6 +3,9 @@ package org.dodgyjammers.jammypiece.musickb;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 
 public class Chord
 {
@@ -12,6 +15,8 @@ public class Chord
   public static final Chord CHORD_IV = new Chord(5);
   public static final Chord CHORD_V = new Chord(7);
   public static final Chord CHORD_vi = new Chord(9);
+
+  private static final Logger LOGGER = LogManager.getLogger();
 
   /**
    * The chord, expressed as a chromatic offset from the key that we're in.
@@ -197,10 +202,12 @@ public class Chord
     List<Integer> lOffsets = getChordOffsets();
     if (lOffsets.contains(xiNote))
     {
+      LOGGER.info("Found clash");
       return false;
     }
     else
     {
+      LOGGER.info("Found compatible code");
       return true;
     }
   }
@@ -221,6 +228,7 @@ public class Chord
       lChord += " (" + mVariation.toString() + ")";
     }
 
+    if (!mMajor) lChord = lChord.toLowerCase();
     return lChord;
   }
 

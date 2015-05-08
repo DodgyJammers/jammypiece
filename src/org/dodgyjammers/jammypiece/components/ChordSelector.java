@@ -75,11 +75,14 @@ public class ChordSelector extends Distributor<ChordChangeEvent> implements Cons
   {
     boolean lChanged = false;
 
+    LOGGER.debug("lDirn = " + lDirn + ", lDist = " + lDist);
     ArrayList<ChordGroup> lCandidates = new ArrayList();
     if (mChordGroup == null)
     {
       mChordGroup = mChordMap.getRoot();
+      mChord = mChordGroup.mPrimaryChord;
       lChanged = true;
+      LOGGER.debug("Initialised mChordGroup to " + mChordGroup);
     }
     for (ChordGroup lNeighbour: mChordGroup.mNeighbours)
     {
@@ -97,6 +100,8 @@ public class ChordSelector extends Distributor<ChordChangeEvent> implements Cons
       // Abort if the neighbour is too far away.
       if (lNeighbour.mShortestPathHome > lDist)
         continue;
+
+      lCandidates.add(lNeighbour);
     }
 
     // Loop through the shuffled chord groups and variations, looking
@@ -107,7 +112,9 @@ public class ChordSelector extends Distributor<ChordChangeEvent> implements Cons
       lNote = mCurrentNote - mKey.mTonicNoteNum;
       while (lNote <= 0)
         lNote += 12;
+      LOGGER.debug("Current note: "+lNote);
     }
+    LOGGER.debug("Num candidate groups: "+lCandidates.size());
     if (lCandidates.size() != 0)
     {
       Collections.shuffle(lCandidates);
@@ -119,7 +126,7 @@ public class ChordSelector extends Distributor<ChordChangeEvent> implements Cons
         for (Chord lChord: lChords)
         {
           // Move along if this note clashes
-          if ((mCurrentNote != 0) && lChord.clashes(lNote))
+          if ((lNote != 0) && lChord.clashes(lNote))
           {
             continue;
           }
@@ -247,7 +254,7 @@ public class ChordSelector extends Distributor<ChordChangeEvent> implements Cons
       // 5 home
 
       // 4 tonic
-      int [] lBeatDirn = {0, 0, -1, -1, -1, -1, -1, 1, 1, 1, 1, 1, 0, 0, 0, 0};
+      int [] lBeatDirn = {0, 0, 1, 1, 1, 1, 1, -1, -1, -1, -1, -1, 0, 0, 0, 0};
 
       assert(mBeatsLeftInSection <= 16);
       return lBeatDirn[16 - mBeatsLeftInSection];
