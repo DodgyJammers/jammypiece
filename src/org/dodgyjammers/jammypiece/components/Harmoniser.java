@@ -64,10 +64,13 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
 
   public void playNewChord()
   {
-	  //iterate over the notes in the chord and stop them all.
-    for (int note: getNotes(mCurrentChord))
+    if (mCurrentChord != null)
     {
-      distribute(RichMidiEvent.makeNoteOff(mHarmonyChannel, note));
+      //iterate over the notes in the chord and stop them all.
+      for (int note: getNotes(mCurrentChord))
+      {
+        distribute(RichMidiEvent.makeNoteOff(mHarmonyChannel, note));
+      }
     }
 
 	  //iterate over the notes in the new chord and play them all (for now at once
