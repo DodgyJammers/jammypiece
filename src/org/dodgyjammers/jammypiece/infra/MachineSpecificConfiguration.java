@@ -27,7 +27,8 @@ public class MachineSpecificConfiguration
     MIDI_OUT_DEVICE,
 
     /**
-     * The MIDI input device to use (name + description).
+     * The MIDI input device to use (name + description, or dummy, or null).
+     * Substring match.
      */
     MIDI_IN_DEVICE,
 
@@ -53,6 +54,12 @@ public class MachineSpecificConfiguration
     CLICKER_CHANNEL,
     CLICKER_STRESSED_NOTE,
     CLICKER_UNSTRESSED_NOTE,
+    
+    /**
+     * Drummer configuration.
+     */
+    DRUMMER_ENABLED,
+    DRUMMER_CHANNEL,
 
     /**
      * General channel configuration.

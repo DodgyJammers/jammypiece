@@ -9,6 +9,7 @@ import org.apache.logging.log4j.Logger;
 import org.dodgyjammers.jammypiece.components.ChordSelector;
 import org.dodgyjammers.jammypiece.components.Clicker;
 import org.dodgyjammers.jammypiece.components.CommandHandler;
+import org.dodgyjammers.jammypiece.components.Drummer;
 import org.dodgyjammers.jammypiece.components.DummyMidiSource;
 import org.dodgyjammers.jammypiece.components.Harmoniser;
 import org.dodgyjammers.jammypiece.components.InputSelector;
@@ -81,6 +82,7 @@ public class jammypiece
       Producer<ChordChangeEvent> lChordSelector = new ChordSelector(lJunkFilter, lKeyDetector, lMetronome);
       Producer<RichMidiEvent> lAdjuster = new MelodyAdjuster(lJunkFilter, lChordSelector, lMetronome);
       Producer<RichMidiEvent> lHarmoniser = new Harmoniser(lAdjuster, lChordSelector, lKeyDetector, lMetronome, lTimeSigDetector);
+      Producer<RichMidiEvent> lDrummer = new Drummer(lMetronome, lChordSelector);
       new MidiEventDumper(lAdjuster, MelodyAdjuster.class.getName());
       new MidiEventDumper(lHarmoniser, Harmoniser.class.getName());
       new MidiEventDumper(lClicker, Clicker.class.getName());
@@ -92,6 +94,7 @@ public class jammypiece
       lOutputs.add(lAdjuster);
       lOutputs.add(lHarmoniser);
       lOutputs.add(lClicker);
+      lOutputs.add(lDrummer);
       lOutputs.add(lCommandHandler);
       MidiOut lMidiOut = new MidiOut(Collections.singletonList((Producer<RichMidiEvent>)lOutputs));
       
