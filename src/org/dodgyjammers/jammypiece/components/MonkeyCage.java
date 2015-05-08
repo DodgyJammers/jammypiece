@@ -34,7 +34,7 @@ public class MonkeyCage implements Consumer<RichMidiEvent>
   private static final String SAVEDIR = "saved";
   
   // http://en.wikipedia.org/wiki/Pulses_per_quarter_note
-  private static final int PPQ_COUNT = 96;
+  private static final int PPQ_COUNT = 384;
   
   // http://www.midi.org/aboutmidi/tut_midifiles.php
   private static final int MIDI_FILE_TYPE = 1;
@@ -50,7 +50,7 @@ public class MonkeyCage implements Consumer<RichMidiEvent>
   public MonkeyCage(TempoChangeEvent xiTempo) throws InvalidMidiDataException  {
     mBaseTimeMillis = System.currentTimeMillis();
     mSequence = new Sequence(Sequence.PPQ, PPQ_COUNT);
-    mMillisPerTick = xiTempo.mTempo / PPQ_COUNT / 1000;
+    mMillisPerTick = (float)xiTempo.mTempo / PPQ_COUNT / 1000;
     mTrack = mSequence.createTrack();
     DateFormat fmt = new SimpleDateFormat("yyyy-MM-dd_hh.mm.ss");
     mBasename = MachineSpecificConfiguration.getMachineName() + "-" + fmt.format(new Date());
