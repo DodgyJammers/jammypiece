@@ -173,8 +173,8 @@ public class Chord
       case SUS:
         // Remove the 3rd and insert the 4th.
         assert(mMajor) : "No such thing as a minor suspended chord";
-        lChordOffsets.remove(lRoot + 4);
-        lChordOffsets.add(lRoot + 5, 1);
+        lChordOffsets.remove(1);
+        lChordOffsets.add(1, lRoot + 5);
         break;
     }
 
@@ -202,6 +202,40 @@ public class Chord
     else
     {
       return true;
+    }
+  }
+
+  @Override
+  public String toString()
+  {
+    String lRomanChord = romanNumeral(mChordNum);
+    String lRomanBase = romanNumeral(mBaseNoteNum);
+    String lChord = lRomanChord;
+    if (mChordNum != mBaseNoteNum)
+    {
+      lChord = lChord + "/" + lRomanBase;
+    }
+
+    if (mVariation != Variation.NONE)
+    {
+      lChord += " (" + mVariation.toString() + ")";
+    }
+
+    return lChord;
+  }
+
+  public String romanNumeral(int xiChromatic)
+  {
+    switch (xiChromatic)
+    {
+      case 0: return "I";
+      case 2: return "II";
+      case 4: return "III";
+      case 5: return "IV";
+      case 7: return "V";
+      case 9: return "VI";
+      case 11: return "VII";
+      default: return "?";
     }
   }
 }

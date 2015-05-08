@@ -3,6 +3,8 @@ package org.dodgyjammers.jammypiece.components;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.dodgyjammers.jammypiece.events.ChordChangeEvent;
 import org.dodgyjammers.jammypiece.events.KeyChangeEvent;
 import org.dodgyjammers.jammypiece.events.RichMidiEvent;
@@ -17,6 +19,8 @@ import org.dodgyjammers.jammypiece.musickb.Key;
 
 public class ChordSelector extends Distributor<ChordChangeEvent> implements Consumer<RichMidiEvent>
 {
+  private static final Logger LOGGER = LogManager.getLogger();
+
   private final KeyChangeListener mKeyChangeListener;
   private final MetronomeListener mMetronomeListener;
   private final SongStructure mSongStructure;
@@ -155,13 +159,14 @@ public class ChordSelector extends Distributor<ChordChangeEvent> implements Cons
     if ((lchanged) || (xiTick.mStress))
     {
       // @@@ It would be nice to start predicting the next chord.
+      LOGGER.info("Distributing chord change: " + mChord);
       mSongStructure.produceChordChangeEvent(mChord,
                                              mChord,
                                              xiTick.mTickInBeat);
     }
   }
 
-  private class SongStructure extends Distributor<ChordChangeEvent>
+  private class SongStructure
   {
     public int [] mStructure;       // Song structure, ie 1,1,2,1
     public int mSection;            // Index into the above array

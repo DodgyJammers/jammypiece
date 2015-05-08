@@ -6,6 +6,8 @@ import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiEvent;
 import javax.sound.midi.ShortMessage;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.dodgyjammers.jammypiece.events.ChordChangeEvent;
 import org.dodgyjammers.jammypiece.events.KeyChangeEvent;
 import org.dodgyjammers.jammypiece.events.RichMidiEvent;
@@ -23,6 +25,8 @@ import org.dodgyjammers.jammypiece.musickb.TimeSignature;
 
 public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<RichMidiEvent>
 {
+  private static final Logger LOGGER = LogManager.getLogger();
+
   private final ChordListener mChordListener;
   private final MetronomeListener mMetronomeListener;
   private final KeyChangeListener mKeyChangeListener;
@@ -65,7 +69,7 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
     mTimeSigListener = new TimeSignatureListener();
     mHarmonyChannel = MachineSpecificConfiguration.getCfgVal(CfgItem.CHORD_CHANNEL, 0);
     mBassChannel = MachineSpecificConfiguration.getCfgVal(CfgItem.BASS_CHANNEL, 0);
-    String lHarmonyStyle = MachineSpecificConfiguration.getCfgVal(CfgItem.HARMONY_STYLE, "DUET");
+    String lHarmonyStyle = MachineSpecificConfiguration.getCfgVal(CfgItem.HARMONY_STYLE, "CHORDS");
     mHarmonyStyle = HarmonyStyle.valueOf(lHarmonyStyle);
 
     xiMelodySource.registerConsumer(this);
@@ -85,31 +89,38 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
     }
 
     // From the current chord and the received event, find the closest duet note, below the melody.
-    if ((mHarmonyStyle == HarmonyStyle.DUET) && (mNewChord != null))
+    if (mHarmonyStyle == HarmonyStyle.DUET)
     {
-      int lBestOffsetFromNote = 0;
-
-      int lNote = xiItem.getNote() % 12;
-      for (int lOffsetFromKey : mNewChord.getChordOffsets())
+      if (mNewChord == null)
       {
-        int lChordNote = (mKey.mTonicNoteNum + lOffsetFromKey) % 12;
-        int lOffsetFromNote = (lNote - lChordNote) % 12;
-        while (lOffsetFromNote < 1)
-        {
-          lOffsetFromNote += 12;
-        }
-        if (lOffsetFromNote > lBestOffsetFromNote)
-        {
-          lBestOffsetFromNote = lOffsetFromNote;
-        }
+        LOGGER.warn("Can't duet without a chord");
       }
+      else
+      {
+        int lBestOffsetFromNote = 0;
 
-      // Create a matching event.
-      byte[] lMessageBytes = xiItem.getMessage().getMessage();
-      lMessageBytes[1] += (lBestOffsetFromNote - 12);
-      MidiEvent lEvent = new MidiEvent(new ShortMessage(lMessageBytes[0], lMessageBytes[1], lMessageBytes[2]),
-                                       xiItem.getTick());
-      distribute(new RichMidiEvent(lEvent));
+        int lNote = xiItem.getNote() % 12;
+        for (int lOffsetFromKey : mNewChord.getChordOffsets())
+        {
+          int lChordNote = (mKey.mTonicNoteNum + lOffsetFromKey) % 12;
+          int lOffsetFromNote = (lNote - lChordNote) % 12;
+          while (lOffsetFromNote < 1)
+          {
+            lOffsetFromNote += 12;
+          }
+          if (lOffsetFromNote > lBestOffsetFromNote)
+          {
+            lBestOffsetFromNote = lOffsetFromNote;
+          }
+        }
+
+        // Create a matching event.
+        byte[] lMessageBytes = xiItem.getMessage().getMessage();
+        lMessageBytes[1] += (lBestOffsetFromNote - 12);
+        MidiEvent lEvent = new MidiEvent(new ShortMessage(lMessageBytes[0], lMessageBytes[1], lMessageBytes[2]),
+                                         xiItem.getTick());
+        distribute(new RichMidiEvent(lEvent));
+      }
     }
   }
 
@@ -119,6 +130,7 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
     @Override
     public void consume(ChordChangeEvent xiItem)
     {
+      LOGGER.info("Received chord change event");
       mNewChord = xiItem.mChord;
       mSection = xiItem.mSection;
       mStructure = xiItem.mStructure;
@@ -204,13 +216,14 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
 
   private void arpeggiation()
   {
-    if (mArpeggNum < mNumBeats)
+    int[] lNotes = getNotes(mNewChord);
+    if (mArpeggNum < lNotes.length)
     {
       if (mCurrentChord != null)
       {
         stopChord(mCurrentChord, mHarmonyChannel);
       }
-      distribute(RichMidiEvent.makeNoteOn(mHarmonyChannel, getNotes(mNewChord)[mArpeggNum]));
+      distribute(RichMidiEvent.makeNoteOn(mHarmonyChannel, lNotes[mArpeggNum]));
       mArpeggNum = mArpeggNum + 1;
     }
     else
