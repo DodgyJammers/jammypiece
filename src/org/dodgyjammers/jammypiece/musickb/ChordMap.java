@@ -107,12 +107,25 @@ public class ChordMap
     if (MachineSpecificConfiguration.getCfgVal(CfgItem.COMPLEX_CHORDS, false))
     {
       // Add variations to the existing groups.
-      CHORD_I.addVariation(new Chord(0, 0, 0, true, Chord.Variation.M2));
-      CHORD_I.addVariation(new Chord(0, 0, 0, true, Chord.Variation.M6));
-      CHORD_I.addVariation(new Chord(0, 0, 0, true, Chord.Variation.M7));
-      CHORD_I.addVariation(new Chord(0, 0, 0, true, Chord.Variation.M9));
-      CHORD_I.addVariation(new Chord(0, 0, 0, true, Chord.Variation.SUS));
+      CHORD_I.addVariation(new Chord(0, Chord.Variation.M2));
+      CHORD_I.addVariation(new Chord(0, Chord.Variation.M6));
+      CHORD_I.addVariation(new Chord(0, Chord.Variation.M7));
+      CHORD_I.addVariation(new Chord(0, Chord.Variation.M9));
+      CHORD_I.addVariation(new Chord(0, Chord.Variation.SUS));
 
+      CHORD_ii.addVariation(new Chord(2, Chord.Variation.m7));
+      CHORD_ii.addVariation(new Chord(2, Chord.Variation.m9));
+
+      CHORD_iii.addVariation(new Chord(4, Chord.Variation.m7));
+
+      CHORD_IV.addVariation(new Chord(5, Chord.Variation.M6));
+      CHORD_IV.addVariation(new Chord(5, Chord.Variation.M7));
+
+      CHORD_V.addVariation(new Chord(7, Chord.Variation.M7));
+      CHORD_V.addVariation(new Chord(7, Chord.Variation.M9));
+      CHORD_V.addVariation(new Chord(7, Chord.Variation.M11));
+      CHORD_V.addVariation(new Chord(7, Chord.Variation.M13));
+      CHORD_V.addVariation(new Chord(7, Chord.Variation.SUS));
     }
   }
 
