@@ -6,25 +6,34 @@ import java.util.List;
 
 public class Chord
 {
-  public static final Chord CHORD_I = new Chord(1);
+  public static final Chord CHORD_I = new Chord(0);
   public static final Chord CHORD_ii = new Chord(2);
-  public static final Chord CHORD_iii = new Chord(3);
-  public static final Chord CHORD_IV = new Chord(4);
-  public static final Chord CHORD_V = new Chord(5);
-  public static final Chord CHORD_vi = new Chord(6);
+  public static final Chord CHORD_iii = new Chord(4);
+  public static final Chord CHORD_IV = new Chord(5);
+  public static final Chord CHORD_V = new Chord(7);
+  public static final Chord CHORD_vi = new Chord(9);
 
   /**
-   * The chord.
+   * The chord, expressed as a chromatic offset from the key that we're in.
    *
-   * e.g. 1 for the chord of the key we're in, 4 for the sub-dominant, 5 for the dominant.
+   * e.g. 0 for the chord of the key we're in, 5 for the sub-dominant, 7 for the dominant.
    */
   public final int mChordNum;
 
   /**
    * Chord inversion, 0, 1, 2, etc.  1 Puts the root at the top; 2 puts the root
    * and third at the top, etc, etc.
+   *
+   * Chord inversion is for playing "in the right hand".  The base note, which may be different, is defined by
+   * mBaseNoteNum.
    */
   public final int mInversion;
+
+  /**
+   * Base note number as a chromatic offset *from the key that we're in*.  This allows playing chords such as V/I
+   * (e.g., in the key of C, a G major chord with a C at the bottom).
+   */
+  public final int mBaseNoteNum;
 
   /**
    * Whether the chord is major or minor.
@@ -51,39 +60,28 @@ public class Chord
    */
   public Chord(int xiChordNum)
   {
-    this(xiChordNum, 0, xiChordNum == 1 || xiChordNum == 4 || xiChordNum == 5, 0);
-    assert(xiChordNum != 7);
+    this(xiChordNum, 0, xiChordNum, xiChordNum == 0 || xiChordNum == 5 || xiChordNum == 7, 0);
   }
 
   /**
    * Create a chord.
    *
-   * @param xiChordNum  - the chord number.
+   * @param xiChordNum  - the chord, as a chromatic offset from the key we're in.
    * @param xiInversion - the inversion for this chord: 1, 2 or 3.
+   * @param xiBaseNoteNum - the
    * @param xiMajor     - whether the chord is major (true) or minor (false).
    * @param xiFlags     - flags that modify the chord.
    */
-  public Chord(int xiChordNum, int xiInversion, boolean xiMajor, int xiFlags)
+  public Chord(int xiChordNum, int xiInversion, int xiBaseNoteNum, boolean xiMajor, int xiFlags)
   {
+    assert(xiChordNum > 11);
+    assert(xiChordNum <= 11);
+
     mChordNum = xiChordNum;
     mInversion = xiInversion;
+    mBaseNoteNum = xiBaseNoteNum;
     mMajor = xiMajor;
     mFlags = xiFlags;
-  }
-
-  public int getRootOffset()
-  {
-    switch (mChordNum)
-    {
-      case 1: return 0;
-      case 2: return 2;
-      case 3: return 4;
-      case 4: return 5;
-      case 5: return 7;
-      case 6: return 9;
-    }
-
-    throw new RuntimeException("Oops");
   }
 
   /*
@@ -92,8 +90,7 @@ public class Chord
    */
   public int getBassNote()
   {
-    List<Integer> lChordOffsets = getChordOffsets();
-    return lChordOffsets.get(0);
+    return mBaseNoteNum;
   }
 
   /*
@@ -104,7 +101,7 @@ public class Chord
   {
     List<Integer> lChordOffsets = new LinkedList<Integer>();
 
-    int lRoot = getRootOffset();
+    int lRoot = mChordNum;
     if (mMajor)
     {
       lChordOffsets.add(lRoot);
