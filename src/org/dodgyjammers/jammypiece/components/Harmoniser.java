@@ -1,9 +1,5 @@
 package org.dodgyjammers.jammypiece.components;
 
-import javax.sound.midi.MidiEvent;
-import javax.sound.midi.MidiMessage;
-import javax.sound.midi.ShortMessage;
-
 import org.dodgyjammers.jammypiece.events.ChordChangeEvent;
 import org.dodgyjammers.jammypiece.events.KeyChangeEvent;
 import org.dodgyjammers.jammypiece.events.RichMidiEvent;
@@ -19,11 +15,11 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
   private final ChordListener mChordListener;
   private final MetronomeListener mMetronomeListener;
   private final KeyChangeListener mKeyChangeListener;
-  
+
   private Chord mCurrentChord;
   private int mHarmonyChannel;
   private Chord mNewChord;
-  
+
   private volatile Key mKey;
 
   public Harmoniser(Producer<RichMidiEvent> xiMelodySource,
@@ -66,34 +62,37 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
     }
   }
 
-  public void playNewChord() 
+  public void playNewChord()
   {
-	//iterate over the notes in the chord and stop them all.
-    /*
-    for (int note: mCurrentChord.getnotes())
+	  //iterate over the notes in the chord and stop them all.
+    for (int note: getNotes(mCurrentChord))
     {
       distribute(RichMidiEvent.makeNoteOff(mHarmonyChannel, note));
     }
-	
-	//iterate over the notes in the new chord and play them all (for now at once
+
+	  //iterate over the notes in the new chord and play them all (for now at once
     // and at the same noise.
-    for(int note: mNewChord.getNotes())
+    for(int note: getNotes(mNewChord))
     {
-	  distribute(RichMidiEvent.makeNoteOn(mHarmonyChannel, note));
+	    distribute(RichMidiEvent.makeNoteOn(mHarmonyChannel, note));
     }
-    */
-    
-	mCurrentChord = mNewChord;
+
+	  mCurrentChord = mNewChord;
   }
 
-  public Chord getChord(ChordChangeEvent xiItem) 
+  private int[] getNotes(Chord xiChord)
   {
-	Chord lChord = null;
-	//xiItem.getChord();
-	// Pull the chord being set from the chord change event.
-	return lChord;
+    int[] lNoteOffsets = xiChord.getChordOffsets();
+    int[] lNotes = new int[lNoteOffsets.length];
+    int iterator = 0;
+    for (int lOffset : lNoteOffsets)
+    {
+      lNotes[iterator] = mKey.mTonicNoteNum + lOffset;
+      iterator++;
+    }
+    return lNotes;
   }
- 
+
   private class KeyChangeListener implements Consumer<KeyChangeEvent>
   {
     @Override
