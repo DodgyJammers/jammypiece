@@ -12,5 +12,8 @@
     <Root level="debug">
       <AppenderRef ref="Console"/>
     </Root>
+    <Root level="debug">
+      <AppenderRef ref="WsLog"/>
+    </Root>
   </Loggers>
 </Configuration>
