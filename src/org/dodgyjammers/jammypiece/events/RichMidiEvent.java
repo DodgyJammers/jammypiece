@@ -88,4 +88,9 @@ public class RichMidiEvent extends MidiEvent
       throw new RuntimeException(e);
     }
   }
+  
+  public RichMidiEvent at(long xiTick)
+  {
+    return new RichMidiEvent(getMessage(), xiTick);
+  }
 }

@@ -69,25 +69,29 @@ public class MachineSpecificConfiguration
     COMPLEX_CHORDS,
   }
 
-  private static final Properties MACHINE_PROPERTIES = new Properties();
+  private static String sComputerName;
   static
   {
     // Computer is identified by the COMPUTERNAME environment variable (Windows) or HOSTNAME (Linux).
-    String lComputerName = System.getenv("COMPUTERNAME");
-    if (lComputerName == null)
+    sComputerName = System.getenv("COMPUTERNAME");
+    if (sComputerName == null)
     {
-      lComputerName = System.getenv("HOSTNAME");
+      sComputerName = System.getenv("HOSTNAME");
     }
-
-    if (lComputerName != null)
+  }
+  
+  private static final Properties MACHINE_PROPERTIES = new Properties();
+  static
+  {
+    if (sComputerName != null)
     {
-      try (InputStream lPropStream = new FileInputStream("data/cfg/" + lComputerName + ".properties"))
+      try (InputStream lPropStream = new FileInputStream("data/cfg/" + sComputerName + ".properties"))
       {
         MACHINE_PROPERTIES.load(lPropStream);
       }
       catch (IOException lEx)
       {
-        LOGGER.warn("Missing/invalid machine-specific configuration for " + lComputerName);
+        LOGGER.warn("Missing/invalid machine-specific configuration for " + sComputerName);
       }
     }
     else
@@ -107,6 +111,10 @@ public class MachineSpecificConfiguration
     return (MACHINE_PROPERTIES.getProperty(xiKey.toString(), xiDefault));
   }
 
+  public static String getMachineName() {
+    return sComputerName;
+  }
+  
   /**
    * @return the specified integer configuration value, or the default if not configured.
    *

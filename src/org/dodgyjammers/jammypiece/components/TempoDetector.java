@@ -27,4 +27,8 @@ public class TempoDetector extends Distributor<TempoChangeEvent> implements Cons
   {
     // Discard events
   }
+  
+  public TempoChangeEvent current() {
+    return mTempo;
+  }
 }

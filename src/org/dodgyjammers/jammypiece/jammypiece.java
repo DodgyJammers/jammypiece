@@ -19,6 +19,7 @@ import org.dodgyjammers.jammypiece.components.Metronome;
 import org.dodgyjammers.jammypiece.components.MidiEventDumper;
 import org.dodgyjammers.jammypiece.components.MidiIn;
 import org.dodgyjammers.jammypiece.components.MidiOut;
+import org.dodgyjammers.jammypiece.components.MonkeyCage;
 import org.dodgyjammers.jammypiece.components.TempoDetector;
 import org.dodgyjammers.jammypiece.components.TimeSignatureDetector;
 import org.dodgyjammers.jammypiece.events.ChordChangeEvent;
@@ -28,6 +29,7 @@ import org.dodgyjammers.jammypiece.events.TempoChangeEvent;
 import org.dodgyjammers.jammypiece.events.TimeSignatureChangeEvent;
 import org.dodgyjammers.jammypiece.infra.MachineSpecificConfiguration;
 import org.dodgyjammers.jammypiece.infra.MachineSpecificConfiguration.CfgItem;
+import org.dodgyjammers.jammypiece.infra.Merger;
 import org.dodgyjammers.jammypiece.infra.Producer;
 import org.dodgyjammers.jammypiece.infra.WsLogServer;
 
@@ -40,9 +42,10 @@ public class jammypiece
   
   private static volatile Thread sMainThread;
 
-  public static void main(String[] args)
+  public static void main(String[] args) throws Exception
   {
     sMainThread = Thread.currentThread();
+    MonkeyCage lRecorder = null;
     try
     {
       // Initialise log server.
@@ -64,7 +67,7 @@ public class jammypiece
       Producer<RichMidiEvent> lJunkFilter = new JunkFilter(lInputSelector);
       new MidiEventDumper(lJunkFilter, MidiIn.class.getName());
       Producer<KeyChangeEvent> lKeyDetector = new KeyDetector(lJunkFilter);
-      Producer<TempoChangeEvent> lTempoDetector = new TempoDetector(lJunkFilter);
+      TempoDetector lTempoDetector = new TempoDetector(lJunkFilter);
       Producer<TimeSignatureChangeEvent> lTimeSigDetector = new TimeSignatureDetector(lJunkFilter, lTempoDetector);
       Metronome lMetronome = new Metronome(lTempoDetector, lTimeSigDetector);
       Producer<RichMidiEvent> lClicker = new Clicker(lMetronome);
@@ -78,12 +81,16 @@ public class jammypiece
       CommandHandler lCommandHandler = new CommandHandler();
       WsLogServer.INSTANCE.registerConsumer(lCommandHandler);
 
-      List<Producer<RichMidiEvent>> lOutputs = new LinkedList<>();
+      Merger<RichMidiEvent> lOutputs = new Merger<>();
       lOutputs.add(lAdjuster);
       lOutputs.add(lHarmoniser);
       lOutputs.add(lClicker);
       lOutputs.add(lCommandHandler);
-      MidiOut lMidiOut = new MidiOut(lOutputs);
+      MidiOut lMidiOut = new MidiOut(Collections.singletonList((Producer<RichMidiEvent>)lOutputs));
+      
+      lRecorder = new MonkeyCage(lTempoDetector.current());  // TODO: adapt to tempo change
+      lOutputs.registerConsumer(lRecorder);
+      
       lMetronome.setClockSource(lMidiOut);
 
 
@@ -108,6 +115,9 @@ public class jammypiece
     }
 
     // Force quit because we have non-daemon threads, sigh.
+    if (lRecorder != null) {
+      lRecorder.write();
+    }
     System.exit(0);
   }
   
