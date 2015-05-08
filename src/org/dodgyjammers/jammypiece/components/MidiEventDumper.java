@@ -28,6 +28,8 @@ public class MidiEventDumper implements Consumer<RichMidiEvent>
   @Override
   public void consume(RichMidiEvent xiItem) throws Exception
   {
-    mDumpReceiver.send(xiItem.getMessage(), xiItem.getTick());
+    if (xiItem.isNoteOnOff()) {
+      mDumpReceiver.send(xiItem.getMessage(), xiItem.getTick());
+    }
   }
 }
