@@ -24,12 +24,15 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
   private final TimeSignatureListener mTimeSigListener;
 
   private TimeSignature mTimeSignature;
+  private int mNumBeats;
 
   private Chord mCurrentChord;
   private Chord mNewChord;
 
   private int mHarmonyChannel;
   private int mBassChannel;
+
+  private int mArpeggNum;
 
   private volatile Key mKey;
 
@@ -54,6 +57,7 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
     mTimeSigListener = new TimeSignatureListener();
     mHarmonyChannel = MachineSpecificConfiguration.getCfgVal(CfgItem.CHORD_CHANNEL, 0);
     mBassChannel = MachineSpecificConfiguration.getCfgVal(CfgItem.BASS_CHANNEL, 0);
+    mArpeggNum = 0;
 
     xiMelodySource.registerConsumer(this);
     xiChordSource.registerConsumer(mChordListener);
@@ -90,7 +94,7 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
 
       if (xiItem.mStress)
       {
-        playNewChord();
+        arpeggiation();
       }
     }
   }
@@ -111,11 +115,7 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
   {
     if (mCurrentChord != null)
     {
-      //iterate over the notes in the chord and stop them all.
-      for (int note: getNotes(mCurrentChord))
-      {
-        distribute(RichMidiEvent.makeNoteOff(mHarmonyChannel, note));
-      }
+      stopChord(mCurrentChord, mHarmonyChannel);
     }
 
 	  //iterate over the notes in the new chord and play them all (for now at once
@@ -161,6 +161,21 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
   private void arpeggiation()
   {
 
+    if (mArpeggNum < mNumBeats)
+    {
+        if (mCurrentChord != null)
+        {
+          stopChord(mCurrentChord, mHarmonyChannel);
+        }
+      distribute(RichMidiEvent.makeNoteOn(mHarmonyChannel, getNotes(mCurrentChord)[mArpeggNum]));
+      mArpeggNum++;
+    }
+    else
+    {
+      mArpeggNum = 0;
+      arpeggiation();
+    }
+
   }
 
   private class TimeSignatureListener implements Consumer<TimeSignatureChangeEvent>
@@ -170,6 +185,16 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
     public void consume(TimeSignatureChangeEvent xiEvent) throws Exception
     {
       mTimeSignature = xiEvent.mTimeSignature;
+      mNumBeats = mTimeSignature.mNumBeats;
+    }
+  }
+
+  private void stopChord(Chord xiChord,int xiChannel)
+  {
+    //iterate over the notes in the chord and stop them all.
+    for (int note: getNotes(xiChord))
+    {
+      distribute(RichMidiEvent.makeNoteOff(xiChannel, note));
     }
   }
 }
