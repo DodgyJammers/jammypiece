@@ -24,15 +24,17 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
   private final TimeSignatureListener mTimeSigListener;
 
   private TimeSignature mTimeSignature;
-  private int mNumBeats;
 
   private Chord mCurrentChord;
   private Chord mNewChord;
 
   private int mHarmonyChannel;
   private int mBassChannel;
+  private int mNumBeats;
+  private int mArpeggNum = 0;
+  private int mSection;
 
-  private int mArpeggNum =0;
+  private String[] mHarmonyStyle = new String[2];
 
   private volatile Key mKey;
 
@@ -57,6 +59,8 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
     mTimeSigListener = new TimeSignatureListener();
     mHarmonyChannel = MachineSpecificConfiguration.getCfgVal(CfgItem.CHORD_CHANNEL, 0);
     mBassChannel = MachineSpecificConfiguration.getCfgVal(CfgItem.BASS_CHANNEL, 0);
+    mHarmonyStyle[0] = MachineSpecificConfiguration.getCfgVal(CfgItem.HARMONY_STYLE_A, "ARPEGGIO");
+    mHarmonyStyle[1] = MachineSpecificConfiguration.getCfgVal(CfgItem.HARMONY_STYLE_B, "CHORDS");
 
     xiMelodySource.registerConsumer(this);
     xiChordSource.registerConsumer(mChordListener);
@@ -78,6 +82,7 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
     public void consume(ChordChangeEvent xiItem)
     {
       mNewChord = xiItem.mChord;
+      mSection = xiItem.mSection;
     }
   }
 
@@ -89,8 +94,10 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
       if(xiItem.mTickInBeat == 0)
       {
         playNewBassNote();
-        arpeggiation();
       }
+
+      playHarmony(mSection, xiItem);
+
     }
   }
 
@@ -155,25 +162,17 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
 
   private void arpeggiation()
   {
-    System.out.println(mNumBeats);
-    System.out.println(mArpeggNum);
     if (mArpeggNum < mNumBeats)
     {
-      System.out.println("Arpegg num is less than num beats");
       if (mCurrentChord != null)
       {
-        System.out.println("Stopping Current Chord");
         stopChord(mCurrentChord, mHarmonyChannel);
       }
-      System.out.println("Playing New Chord for:");
-      System.out.println(getNotes(mNewChord)[mArpeggNum]);
       distribute(RichMidiEvent.makeNoteOn(mHarmonyChannel, getNotes(mNewChord)[mArpeggNum]));
-      System.out.println("incrementing arpegg num");
       mArpeggNum = mArpeggNum + 1;
     }
     else
     {
-      System.out.println("ArpeggNum is too high resetting to zero");
       mArpeggNum = 0;
       arpeggiation();
     }
@@ -197,6 +196,30 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
     for (int note: getNotes(xiChord))
     {
       distribute(RichMidiEvent.makeNoteOff(xiChannel, note));
+    }
+  }
+
+  private void playHarmony(int xiSection, TickEvent xiItem)
+  {
+    String lStyle = mHarmonyStyle[mSection-1];
+
+    switch(lStyle)
+    {
+      case "CHORDS":
+        if(xiItem.mStress)
+        {
+          playNewChord();
+        }
+        break;
+      case "ARPEGGIO":
+        if(xiItem.mTickInBeat == 0)
+        {
+          arpeggiation();
+        }
+        break;
+      case "DUET":
+        //TODO play a duet
+        break;
     }
   }
 }
