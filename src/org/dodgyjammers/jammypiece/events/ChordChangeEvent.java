@@ -8,9 +8,9 @@ import org.dodgyjammers.jammypiece.musickb.Chord;
 public class ChordChangeEvent
 {
   public final Chord mChord;
-  
+
   public ChordChangeEvent(Chord xiChord)
   {
-	mChord = xiChord;
+    mChord = xiChord;
   }
 }

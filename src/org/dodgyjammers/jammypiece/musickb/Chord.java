@@ -55,7 +55,7 @@ public class Chord
    * Create a chord.
    *
    * @param xiChordNum  - the chord number.
-   * @param xiInversion - the inversion.
+   * @param xiBaseNoteNum - the offset from the chord to the bass note.
    * @param xiMajor     - whether the chord is major (true) or minor (false).
    * @param xiFlags     - flags that modify the chord.
    */
@@ -66,7 +66,7 @@ public class Chord
     mMajor = xiMajor;
     mFlags = xiFlags;
   }
-  
+
   public int getRootOffset()
   {
 	switch (mChordNum)
@@ -78,16 +78,16 @@ public class Chord
 	  case 5: return 7;
 	  case 6: return 9;
 	}
-	
+
 	throw new RuntimeException("Oops");
   }
-  
+
   public int getBaseNote()
   {
 	int lNote = 0;
-	
+
 	lNote = mBaseNoteNum;
-	
+
 	return lNote;
   }
 }

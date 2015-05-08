@@ -7,6 +7,7 @@ import org.dodgyjammers.jammypiece.events.TickEvent;
 import org.dodgyjammers.jammypiece.infra.Consumer;
 import org.dodgyjammers.jammypiece.infra.Distributor;
 import org.dodgyjammers.jammypiece.infra.Producer;
+import org.dodgyjammers.jammypiece.musickb.Chord;
 import org.dodgyjammers.jammypiece.musickb.ChordMap;
 
 public class ChordSelector extends Distributor<ChordChangeEvent> implements Consumer<RichMidiEvent>
@@ -14,6 +15,8 @@ public class ChordSelector extends Distributor<ChordChangeEvent> implements Cons
   private final KeyChangeListener mKeyChangeListener;
   private final MetronomeListener mMetronomeListener;
   private final ChordMap mChordMap;
+
+  private volatile boolean mPlayTonicNext = true;
 
   public ChordSelector(Producer<RichMidiEvent> xiMelodySource,
                        Producer<KeyChangeEvent> xiKeySource,
@@ -41,6 +44,23 @@ public class ChordSelector extends Distributor<ChordChangeEvent> implements Cons
     @Override
     public void consume(TickEvent xiTick) throws Exception
     {
+      // For now, amuse Chris by changing the chord each bar.
+      if (xiTick.mStress)
+      {
+        //Pass a chord to the harmoniser
+        if (mPlayTonicNext)
+        {
+          distribute(new ChordChangeEvent(new Chord(1, 0, true, 0)));
+          mPlayTonicNext = false;
+        }
+        else
+        {
+          distribute(new ChordChangeEvent(new Chord(5, 0, true, 0)));
+          mPlayTonicNext = true;
+        }
+
+      }
+
       // Discard metronome events.
     }
   }
