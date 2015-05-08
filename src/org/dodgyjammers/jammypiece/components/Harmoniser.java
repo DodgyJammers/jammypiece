@@ -32,9 +32,9 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
   private int mBassChannel;
   private int mNumBeats;
   private int mArpeggNum = 0;
+  private int mSection;
 
-  private String mHarmonyStyleA;
-  private String mHarmonyStyleB;
+  private String[] mHarmonyStyle = new String[2];
 
   private volatile Key mKey;
 
@@ -59,8 +59,8 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
     mTimeSigListener = new TimeSignatureListener();
     mHarmonyChannel = MachineSpecificConfiguration.getCfgVal(CfgItem.CHORD_CHANNEL, 0);
     mBassChannel = MachineSpecificConfiguration.getCfgVal(CfgItem.BASS_CHANNEL, 0);
-    mHarmonyStyleA = MachineSpecificConfiguration.getCfgVal(CfgItem.HARMONY_STYLE_A, "ARPEGGIO");
-    mHarmonyStyleB = MachineSpecificConfiguration.getCfgVal(CfgItem.HARMONY_STYLE_B, "CHORDS");
+    mHarmonyStyle[0] = MachineSpecificConfiguration.getCfgVal(CfgItem.HARMONY_STYLE_A, "ARPEGGIO");
+    mHarmonyStyle[1] = MachineSpecificConfiguration.getCfgVal(CfgItem.HARMONY_STYLE_B, "CHORDS");
 
     xiMelodySource.registerConsumer(this);
     xiChordSource.registerConsumer(mChordListener);
@@ -82,6 +82,7 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
     public void consume(ChordChangeEvent xiItem)
     {
       mNewChord = xiItem.mChord;
+      mSection = xiItem.mSection;
     }
   }
 
@@ -93,8 +94,10 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
       if(xiItem.mTickInBeat == 0)
       {
         playNewBassNote();
-        arpeggiation();
       }
+
+      playHarmony(mSection, xiItem);
+
     }
   }
 
@@ -193,6 +196,30 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
     for (int note: getNotes(xiChord))
     {
       distribute(RichMidiEvent.makeNoteOff(xiChannel, note));
+    }
+  }
+
+  private void playHarmony(int xiSection, TickEvent xiItem)
+  {
+    String lStyle = mHarmonyStyle[mSection-1];
+
+    switch(lStyle)
+    {
+      case "CHORDS":
+        if(xiItem.mStress)
+        {
+          playNewChord();
+        }
+        break;
+      case "ARPEGGIO":
+        if(xiItem.mTickInBeat == 0)
+        {
+          arpeggiation();
+        }
+        break;
+      case "DUET":
+        //TODO play a duet
+        break;
     }
   }
 }
