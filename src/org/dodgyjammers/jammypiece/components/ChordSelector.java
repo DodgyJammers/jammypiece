@@ -1,5 +1,8 @@
 package org.dodgyjammers.jammypiece.components;
 
+import java.util.ArrayList;
+import java.util.Random;
+
 import org.dodgyjammers.jammypiece.events.ChordChangeEvent;
 import org.dodgyjammers.jammypiece.events.KeyChangeEvent;
 import org.dodgyjammers.jammypiece.events.RichMidiEvent;
@@ -9,6 +12,7 @@ import org.dodgyjammers.jammypiece.infra.Distributor;
 import org.dodgyjammers.jammypiece.infra.Producer;
 import org.dodgyjammers.jammypiece.musickb.Chord;
 import org.dodgyjammers.jammypiece.musickb.ChordMap;
+import org.dodgyjammers.jammypiece.musickb.ChordMap.ChordGroup;
 import org.dodgyjammers.jammypiece.musickb.Key;
 
 public class ChordSelector extends Distributor<ChordChangeEvent> implements Consumer<RichMidiEvent>
@@ -19,8 +23,8 @@ public class ChordSelector extends Distributor<ChordChangeEvent> implements Cons
   private final ChordMap mChordMap;
 
   private volatile Key mKey = Key.valueOf("C_MAJOR");
-
-  private volatile boolean mPlayTonicNext = true;
+  private volatile Chord mChord;
+  private volatile ChordGroup mChordGroup;
 
   public ChordSelector(Producer<RichMidiEvent> xiMelodySource,
                        Producer<KeyChangeEvent> xiKeySource,
@@ -29,6 +33,8 @@ public class ChordSelector extends Distributor<ChordChangeEvent> implements Cons
     mKeyChangeListener = new KeyChangeListener();
     mMetronomeListener = new MetronomeListener();
     mChordMap = new ChordMap();
+    mChord = null;
+    mChordGroup = null;
     mSongStructure = new SongStructure();
 
     xiMelodySource.registerConsumer(this);
@@ -42,6 +48,91 @@ public class ChordSelector extends Distributor<ChordChangeEvent> implements Cons
     // Receive and discard melody events.
   }
 
+  /*
+   * Optionally, select a new chord, and update mChord and
+   * mChordGroup appropriately.  Return true if anything changes,
+   * false otherwise.
+   */
+  boolean getNewChord(int lDirn, int lDist)
+  {
+    boolean lChanged = false;
+
+    ArrayList<ChordGroup> lCandidates = new ArrayList();
+    if (mChordGroup == null)
+    {
+      mChordGroup = mChordMap.getRoot();
+      lChanged = true;
+    }
+    for (ChordGroup lNeighbour: mChordGroup.mNeighbours)
+    {
+      // Abort if the neighbour is in the wrong direction
+      if ((lDirn == 0) &&
+          (lNeighbour.mShortestPathHome != mChordGroup.mShortestPathHome))
+        continue;
+      if ((lDirn == 1) &&
+          (lNeighbour.mShortestPathHome <= mChordGroup.mShortestPathHome))
+        continue;
+      if ((lDirn == -1) &&
+          (lNeighbour.mShortestPathHome >= mChordGroup.mShortestPathHome))
+        continue;
+
+      // Abort if the neighbour is too far away.
+      if (lNeighbour.mShortestPathHome > lDist)
+        continue;
+    }
+
+    // Select a ChordGroup
+    if (lCandidates.size() != 0)
+    {
+      // Pick a random candidate, and use the primary chord
+      Random rand = new Random();
+      int lPos = rand.nextInt(lCandidates.size());
+      mChordGroup = lCandidates.get(lPos);
+      mChord = mChordGroup.mPrimaryChord;
+      lChanged = true;
+    }
+    else
+    {
+      // Sticking with the same chord group, but let's try a variation.
+      Random rand = new Random();
+      if (mChordGroup.mVariations.size() != 0)
+      {
+        int lPos = rand.nextInt(mChordGroup.mVariations.size());
+        mChord = mChordGroup.mVariations.get(lPos);
+        lChanged = true;
+      }
+    }
+
+    return lChanged;
+  }
+
+
+  private void consumeMetronome(TickEvent xiTick)
+  {
+    // Ignore anything shorter than a beat.
+    if (xiTick.mTickInBeat != 0)
+    {
+      return;
+    }
+
+    // Update the song position.
+    mSongStructure.consumeMetronome(xiTick);
+
+    // Work out the chord we should be playing now.  We need several
+    // inputs for this.
+    int lDirn = mSongStructure.getDirection();
+    int lDist = mSongStructure.getMaxDist();
+    boolean lchanged = getNewChord(lDirn, lDist);
+
+    if ((lchanged) || (xiTick.mStress))
+    {
+      // @@@ It would be nice to start predicting the next chord.
+      mSongStructure.produceChordChangeEvent(mChord,
+                                             mChord,
+                                             xiTick.mTickInBeat);
+    }
+  }
+
   private class SongStructure extends Distributor<ChordChangeEvent>
   {
     public int [] mStructure;       // Song structure, ie 1,1,2,1
@@ -49,38 +140,96 @@ public class ChordSelector extends Distributor<ChordChangeEvent> implements Cons
 
     public int mSectionLength;      // Beats in the current section.
     public int mBeatsLeftInSection; // Beats left in this section.
+    public int mClicksPerBeat;
 
 
-
-    public void SongStructure()
+    public SongStructure()
     {
+      // We'll be consuming a metronome before being used for the first time,
+      // so initialise as if as the end of a piece.
       mStructure = new int [] {1, 1, 2, 1};
-      mSection = 0;
+      mSection = 4;
       mSectionLength = 16;
-      mBeatsLeftInSection = 16;
+      mBeatsLeftInSection = 1;
+      mClicksPerBeat = 3;
     }
 
-    public void produceChordChangeEvent(Chord xiChord)
+    public void consumeMetronome(TickEvent xiTick)
     {
-      distribute(new ChordChangeEvent(xiChord));
+      // For now, use the main beats to navigate through
+      // a 16-bar blues structure.
+      if (xiTick.mTickInBeat == 0)
+      {
+        mBeatsLeftInSection--;
+        mClicksPerBeat = xiTick.mTicksPerBeat;
+        if (mBeatsLeftInSection == 0)
+        {
+          mBeatsLeftInSection = mSectionLength;
+          mSection++;
+          switch (mSection)
+          {
+            case 2:
+              mKey = Key.valueOf("G_MAJOR");
+              break;
+            case 3:
+              mKey = Key.valueOf("C_MAJOR");
+              break;
+            case 4:
+              mSection = 0;
+              break;
+            default:
+              break;
+          }
+        }
+      }
+    }
+
+    public void produceChordChangeEvent(Chord xiChord,
+                                        Chord xiNextChord,
+                                        int xiClicksTilChord)
+    {
+      Key lNextKey = (mSection == 3)? Key.valueOf("C_MAJOR"): Key.valueOf("G_MAJOR");
+
+      distribute(new ChordChangeEvent(xiChord,
+                                      xiNextChord,
+                                      xiClicksTilChord,
+                                      mKey,
+                                      lNextKey,
+                                      mBeatsLeftInSection * mClicksPerBeat,
+                                      mStructure,
+                                      mSection,
+                                      mSectionLength,
+                                      mBeatsLeftInSection * mClicksPerBeat));
     }
 
     /*
      * Are we moving away from or towards the root chord?
      * -1 for towards, 1 for away, 0 for no preference.
      */
-    public int direction()
+    public int getDirection()
     {
-      return 0;
+      // 16 beats in section;
+      // 2 tonic
+      // 5 away
+      // 5 home
+
+      // 4 tonic
+      int [] lBeatDirn = {0, 0, -1, -1, -1, -1, -1, 1, 1, 1, 1, 1, 0, 0, 0, 0};
+
+      assert(mBeatsLeftInSection <= 16);
+      return lBeatDirn[16 - mBeatsLeftInSection];
     }
 
     /*
      * For a chord selected now, how far from the tonic are we allowed to be?
      * Zero means that the tonic chord is the only answer!
      */
-    public int max_dist()
+    public int getMaxDist()
     {
-      return 0;
+      int [] lBeatDist = {0, 0, 5, 5, 5, 5, 5, 4, 3, 2, 1, 1, 0, 0, 0, 0};
+
+      assert(mBeatsLeftInSection <= 16);
+      return lBeatDist[16 - mBeatsLeftInSection];
     }
   }
 
@@ -89,21 +238,8 @@ public class ChordSelector extends Distributor<ChordChangeEvent> implements Cons
     @Override
     public void consume(TickEvent xiTick) throws Exception
     {
-      // For now, amuse Chris by changing the chord each bar.
-      if (xiTick.mStress)
-      {
-        // Pass a chord to the harmoniser
-        if (mPlayTonicNext)
-        {
-          distribute(new ChordChangeEvent(Chord.CHORD_I));
-          mPlayTonicNext = false;
-        }
-        else
-        {
-          distribute(new ChordChangeEvent(Chord.CHORD_V));
-          mPlayTonicNext = true;
-        }
-      }
+      // Pass tick to base class.
+      consumeMetronome(xiTick);
     }
   }
 

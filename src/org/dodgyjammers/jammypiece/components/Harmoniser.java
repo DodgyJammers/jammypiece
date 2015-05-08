@@ -241,7 +241,13 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
 
   private void playHarmony(int xiSection, TickEvent xiItem)
   {
-    String lStyle = mHarmonyStyle[mStructure[mSection] - 1];
+    String lStyle;
+
+    lStyle = "CHORDS";
+    if (mStructure != null)
+    {
+      lStyle = mHarmonyStyle[mStructure[mSection] - 1];
+    }
 
     mDuet = false;
 
