@@ -56,7 +56,14 @@ public abstract class Distributor<T> implements Producer<T>
     {
       // Log the exception as an error, but the show must go on. Swallow it
       // and continue.
-      LOGGER.error("Consumer " + xiConsumer + " threw while processing " + xiItem, e);
+      Class klass = xiConsumer.getClass();
+      while (klass.getEnclosingClass() != null)
+      {
+        klass = klass.getEnclosingClass();
+      }
+      
+      Logger theirLogger = LogManager.getLogger(klass.getName());
+      theirLogger.error("Consumer " + xiConsumer + " threw while processing " + xiItem, e);
     }
   }
 
