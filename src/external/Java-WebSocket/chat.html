@@ -110,6 +110,10 @@
               scrollLock = $("scrollLock").checked;
             });
 
+            $("quit").observe("click", function(e) {
+              ws.send("quit");
+            });
+
             $("disconnect").observe("click", function(e) {
                 e.stop();
                 if (ws) {
@@ -124,7 +128,9 @@
       <table><tr>
       <td><form id="uriForm"><input type="text" id="uri" value="ws://localhost:8887" style="width:200px;"> <input type="submit" id="connect" value="Connect"><input type="button" id="disconnect" value="Disconnect" disabled="disabled"></form>
       <td><form id="sendForm"><input type="text" id="textField" value="" style="width:200px;"> <input type="submit" value="Send"><input type="button" id="clear" value="Clear"></form>
-      <td><form id="miscForm"><input type="checkbox" value="" id="scrollLock"> Scroll Lock</form>
+      <td><form id="miscForm"><input type="checkbox" value="" id="scrollLock"> Scroll Lock
+                              <input type="button" value="Quit" id="quit">
+          </form>
       </table>
       <textarea id="log1" rows="30" cols="100"></textarea>
       <textarea id="log2" rows="30" cols="100"></textarea>

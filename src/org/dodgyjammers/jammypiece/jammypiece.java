@@ -39,9 +39,12 @@ import org.dodgyjammers.jammypiece.infra.Producer;
 public class jammypiece
 {
   private static final Logger LOGGER = LogManager.getLogger();
+  
+  private static volatile Thread sMainThread;
 
   public static void main(String[] args)
   {
+    sMainThread = Thread.currentThread();
     try
     {
       // Initialise log server.
@@ -91,7 +94,7 @@ public class jammypiece
       lMetronome.start();
       LOGGER.info("jammypiece started");
 
-      // Spin until interrupted.
+      // Spin until interrupted.      
       while (true)
       {
         Thread.sleep(30000);
@@ -105,5 +108,13 @@ public class jammypiece
     {
       LOGGER.error("jammypiece failed to start", lEx);
     }
+
+    // Force quit because we have non-daemon threads, sigh.
+    System.exit(0);
+  }
+  
+  public static void quit()
+  {
+    sMainThread.interrupt();
   }
 }
