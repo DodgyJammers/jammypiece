@@ -1,5 +1,8 @@
 package org.dodgyjammers.jammypiece.musickb;
 
+import java.util.LinkedList;
+import java.util.List;
+
 
 public class Chord
 {
@@ -18,7 +21,8 @@ public class Chord
   public final int mChordNum;
 
   /**
-   * Chord inversion, 1, 2 or 3.
+   * Chord inversion, 0, 1, 2, etc.  1 Puts the root at the top; 2 puts the root
+   * and third at the top, etc, etc.
    */
   public final int mInversion;
 
@@ -47,7 +51,7 @@ public class Chord
    */
   public Chord(int xiChordNum)
   {
-    this(xiChordNum, 1, xiChordNum == 1 || xiChordNum == 4 || xiChordNum == 5, 0);
+    this(xiChordNum, 0, xiChordNum == 1 || xiChordNum == 4 || xiChordNum == 5, 0);
     assert(xiChordNum != 7);
   }
 
@@ -88,45 +92,64 @@ public class Chord
    */
   public int getBassNote()
   {
-    int [] lChordOffsets = getChordOffsets();
-
-    assert(lChordOffsets.length > mInversion);
-    assert(mInversion != 0);
-
-    return lChordOffsets[mInversion];
+    List<Integer> lChordOffsets = getChordOffsets();
+    return lChordOffsets.get(0);
   }
 
   /*
-   * Return an array of offsets to the chord notes from the key tonic note.
+   * Return an array of offsets to the chord notes from the key tonic note, in
+   * the appropriate order for the current inversion.
    */
-  public int[] getChordOffsets()
+  public List<Integer> getChordOffsets()
   {
-    int [] lChordOffsets;
+    List<Integer> lChordOffsets = new LinkedList<Integer>();
 
     int lRoot = getRootOffset();
     if (mMajor)
     {
-      lChordOffsets = new int[] {lRoot, lRoot+4, lRoot+7};
+      lChordOffsets.add(lRoot);
+      lChordOffsets.add(lRoot+4);
+      lChordOffsets.add(lRoot+7);
     }
     else
     {
-      lChordOffsets = new int[] {lRoot, lRoot+3, lRoot+7};
+      lChordOffsets.add(lRoot);
+      lChordOffsets.add(lRoot+3);
+      lChordOffsets.add(lRoot+7);
+    }
+    if ((mFlags & CHORD_7TH) != 0)
+    {
+      lChordOffsets.add(lRoot+10);
+    }
+    if ((mFlags & CHORD_9TH) != 0)
+    {
+      lChordOffsets.add(lRoot+10);
+      lChordOffsets.add(lRoot+14);
+    }
+    if ((mFlags & CHORD_11TH) != 0)
+    {
+      lChordOffsets.add(lRoot+10);
+      lChordOffsets.add(lRoot+17);
+    }
+    if ((mFlags & CHORD_13TH) != 0)
+    {
+      lChordOffsets.add(lRoot+10);
+      lChordOffsets.add(lRoot+17);
+      lChordOffsets.add(lRoot+21);
+    }
+    if ((mFlags & CHORD_SUS) != 0)
+    {
+      lChordOffsets.add(lRoot+11);
+    }
+
+    int lInversion = mInversion;
+    while (lInversion != 0)
+    {
+      lChordOffsets.add(lChordOffsets.get(0));
+      lChordOffsets.remove(0);
+      lInversion++;
     }
 
     return lChordOffsets;
-
-    //public final int mChordNum;  - Offset from key to first note in chord
-
-    //public final int mFlags;
-    //public static final int CHORD_7TH  = 0x01;
-    //public static final int CHORD_9TH  = 0x02;
-    //public static final int CHORD_11TH = 0x04;
-    //public static final int CHORD_13TH = 0x08;
-    //public static final int CHORD_SUS  = 0x10;
-
-    //public final int mInversion;
-
-    //public final boolean mMajor;
-
   }
 }

@@ -1,5 +1,7 @@
 package org.dodgyjammers.jammypiece.components;
 
+import java.util.List;
+
 import org.dodgyjammers.jammypiece.events.ChordChangeEvent;
 import org.dodgyjammers.jammypiece.events.KeyChangeEvent;
 import org.dodgyjammers.jammypiece.events.RichMidiEvent;
@@ -119,8 +121,8 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
 
   private int[] getNotes(Chord xiChord)
   {
-    int[] lNoteOffsets = xiChord.getChordOffsets();
-    int[] lNotes = new int[lNoteOffsets.length];
+    List<Integer> lNoteOffsets = xiChord.getChordOffsets();
+    int[] lNotes = new int[lNoteOffsets.size()];
     int iterator = 0;
     for (int lOffset : lNoteOffsets)
     {
