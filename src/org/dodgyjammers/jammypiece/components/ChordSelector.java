@@ -9,14 +9,16 @@ import org.dodgyjammers.jammypiece.infra.Distributor;
 import org.dodgyjammers.jammypiece.infra.Producer;
 import org.dodgyjammers.jammypiece.musickb.Chord;
 import org.dodgyjammers.jammypiece.musickb.ChordMap;
+import org.dodgyjammers.jammypiece.musickb.Key;
 
 public class ChordSelector extends Distributor<ChordChangeEvent> implements Consumer<RichMidiEvent>
 {
   private final KeyChangeListener mKeyChangeListener;
   private final MetronomeListener mMetronomeListener;
+  private final SongStructure mSongStructure;
   private final ChordMap mChordMap;
 
-
+  private volatile Key mKey = Key.valueOf("C_MAJOR");
 
   private volatile boolean mPlayTonicNext = true;
 
@@ -27,18 +29,59 @@ public class ChordSelector extends Distributor<ChordChangeEvent> implements Cons
     mKeyChangeListener = new KeyChangeListener();
     mMetronomeListener = new MetronomeListener();
     mChordMap = new ChordMap();
+    mSongStructure = new SongStructure();
 
     xiMelodySource.registerConsumer(this);
     xiKeySource.registerConsumer(mKeyChangeListener);
     xiMetronome.registerConsumer(mMetronomeListener);
-
-    //distribute(new ChordChangeEvent())
   }
 
   @Override
   public void consume(RichMidiEvent xiItem) throws Exception
   {
     // Receive and discard melody events.
+  }
+
+  private class SongStructure extends Distributor<ChordChangeEvent>
+  {
+    public int [] mStructure;       // Song structure, ie 1,1,2,1
+    public int mSection;            // Index into the above array
+
+    public int mSectionLength;      // Beats in the current section.
+    public int mBeatsLeftInSection; // Beats left in this section.
+
+
+
+    public void SongStructure()
+    {
+      mStructure = new int [] {1, 1, 2, 1};
+      mSection = 0;
+      mSectionLength = 16;
+      mBeatsLeftInSection = 16;
+    }
+
+    public void produceChordChangeEvent(Chord xiChord)
+    {
+      distribute(new ChordChangeEvent(xiChord));
+    }
+
+    /*
+     * Are we moving away from or towards the root chord?
+     * -1 for towards, 1 for away, 0 for no preference.
+     */
+    public int direction()
+    {
+      return 0;
+    }
+
+    /*
+     * For a chord selected now, how far from the tonic are we allowed to be?
+     * Zero means that the tonic chord is the only answer!
+     */
+    public int max_dist()
+    {
+      return 0;
+    }
   }
 
   private class MetronomeListener implements Consumer<TickEvent>
@@ -67,9 +110,10 @@ public class ChordSelector extends Distributor<ChordChangeEvent> implements Cons
   private class KeyChangeListener implements Consumer<KeyChangeEvent>
   {
     @Override
-    public void consume(KeyChangeEvent xiTick) throws Exception
+    public void consume(KeyChangeEvent xiKeyEvent) throws Exception
     {
-      // Discard key change events.
+      // Store key change events.
+      mKey = xiKeyEvent.mNewKey;
     }
   }
 }
