@@ -2,6 +2,10 @@ package org.dodgyjammers.jammypiece.components;
 
 import java.util.List;
 
+import javax.sound.midi.InvalidMidiDataException;
+import javax.sound.midi.MidiEvent;
+import javax.sound.midi.ShortMessage;
+
 import org.dodgyjammers.jammypiece.events.ChordChangeEvent;
 import org.dodgyjammers.jammypiece.events.KeyChangeEvent;
 import org.dodgyjammers.jammypiece.events.RichMidiEvent;
@@ -33,6 +37,7 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
   private int mNumBeats;
   private int mArpeggNum = 0;
   private int mSection;
+  private boolean mDuet = false;
 
   private String[] mHarmonyStyle = new String[2];
 
@@ -70,10 +75,41 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
   }
 
   @Override
-  public void consume(RichMidiEvent xiItem)
+  public void consume(RichMidiEvent xiItem) throws InvalidMidiDataException
   {
-    // Discard melody events, later we will add more smarts based on the
-    // current midi event.
+    if (!xiItem.isNoteOnOff())
+    {
+      // Discard events other than note on/off.
+      return;
+    }
+
+    // From the current chord and the received event, find the closest duet note, below the melody.
+    if (mDuet)
+    {
+      int lBestOffsetFromNote = 0;
+
+      int lNote = xiItem.getNote() % 12;
+      for (int lOffsetFromKey : mCurrentChord.getChordOffsets())
+      {
+        int lChordNote = (mKey.mTonicNoteNum + lOffsetFromKey) % 12;
+        int lOffsetFromNote = (lNote - lChordNote) % 12;
+        while (lOffsetFromNote < 1)
+        {
+          lOffsetFromNote += 12;
+        }
+        if (lOffsetFromNote > lBestOffsetFromNote)
+        {
+          lBestOffsetFromNote = lOffsetFromNote;
+        }
+      }
+
+      // Create a matching event.
+      byte[] lMessageBytes = xiItem.getMessage().getMessage();
+      lMessageBytes[1] += (lBestOffsetFromNote - 12);
+      MidiEvent lEvent = new MidiEvent(new ShortMessage(lMessageBytes[0], lMessageBytes[1], lMessageBytes[2]),
+                                       xiItem.getTick());
+      distribute(new RichMidiEvent(lEvent));
+    }
   }
 
   private class ChordListener implements Consumer<ChordChangeEvent>
@@ -203,6 +239,8 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
   {
     String lStyle = mHarmonyStyle[mSection-1];
 
+    mDuet = false;
+
     switch(lStyle)
     {
       case "CHORDS":
@@ -218,7 +256,7 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
         }
         break;
       case "DUET":
-        //TODO play a duet
+        mDuet = true;
         break;
     }
   }
