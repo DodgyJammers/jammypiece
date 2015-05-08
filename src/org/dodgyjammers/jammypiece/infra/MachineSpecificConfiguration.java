@@ -67,6 +67,16 @@ public class MachineSpecificConfiguration
      * Whether to add complex chord progressions.
      */
     COMPLEX_CHORDS,
+
+    /**
+     * The style of harmony to accompany the solo in A Blocks.
+     */
+    HARMONY_STYLE_A,
+
+    /**
+     * The style of harmony to accompany the solo in B Blocks.
+     */
+    HARMONY_STYLE_B,
   }
 
   private static final Properties MACHINE_PROPERTIES = new Properties();
