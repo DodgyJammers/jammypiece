@@ -1,7 +1,7 @@
 package org.dodgyjammers.jammypiece.components;
 
 import java.util.ArrayList;
-import java.util.Random;
+import java.util.Collections;
 
 import org.dodgyjammers.jammypiece.events.ChordChangeEvent;
 import org.dodgyjammers.jammypiece.events.KeyChangeEvent;
@@ -25,6 +25,7 @@ public class ChordSelector extends Distributor<ChordChangeEvent> implements Cons
   private volatile Key mKey = Key.valueOf("C_MAJOR");
   private volatile Chord mChord;
   private volatile ChordGroup mChordGroup;
+  private volatile int mCurrentNote = 0;  // Pitch of current note - 0 means silence.
 
   public ChordSelector(Producer<RichMidiEvent> xiMelodySource,
                        Producer<KeyChangeEvent> xiKeySource,
@@ -45,7 +46,20 @@ public class ChordSelector extends Distributor<ChordChangeEvent> implements Cons
   @Override
   public void consume(RichMidiEvent xiItem) throws Exception
   {
-    // Receive and discard melody events.
+    // Keep track of the current solo note.
+    if (xiItem.isNoteOnOff())
+    {
+      if  (xiItem.getVelocity() != 0)
+      {
+        // Note on
+        mCurrentNote = xiItem.getNote();
+      }
+      else
+      {
+        // Note off
+        mCurrentNote = 0;
+      }
+    }
   }
 
   /*
@@ -81,25 +95,39 @@ public class ChordSelector extends Distributor<ChordChangeEvent> implements Cons
         continue;
     }
 
-    // Select a ChordGroup
+    // Loop through the shuffled chord groups and variations, looking
+    // for one that is compatible.
+    int lNote = 0;
+    if (mCurrentNote != 0)
+    {
+      lNote = mCurrentNote - mKey.mTonicNoteNum;
+      while (lNote <= 0)
+        lNote += 12;
+    }
     if (lCandidates.size() != 0)
     {
-      // Pick a random candidate, and use the primary chord
-      Random rand = new Random();
-      int lPos = rand.nextInt(lCandidates.size());
-      mChordGroup = lCandidates.get(lPos);
-      mChord = mChordGroup.mPrimaryChord;
-      lChanged = true;
-    }
-    else
-    {
-      // Sticking with the same chord group, but let's try a variation.
-      Random rand = new Random();
-      if (mChordGroup.mVariations.size() != 0)
+      Collections.shuffle(lCandidates);
+      for (ChordGroup lGroup: lCandidates)
       {
-        int lPos = rand.nextInt(mChordGroup.mVariations.size());
-        mChord = mChordGroup.mVariations.get(lPos);
-        lChanged = true;
+        ArrayList<Chord> lChords = new ArrayList<Chord>();
+        lChords.addAll(lGroup.mVariations);
+        Collections.shuffle(lChords);
+        for (Chord lChord: lChords)
+        {
+          // Move along if this note clashes
+          if ((mCurrentNote != 0) && lChord.clashes(lNote))
+          {
+            continue;
+          }
+
+          // Select this Chord
+          mChordGroup = lGroup;
+          mChord = lChord;
+          lChanged = true;
+          break;
+        }
+        if (lChanged)
+          break;
       }
     }
 

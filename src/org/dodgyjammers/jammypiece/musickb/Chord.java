@@ -188,4 +188,20 @@ public class Chord
 
     return lChordOffsets;
   }
+
+  /*
+   * Return true if the note number clashes with the Key.
+   */
+  public boolean clashes(int xiNote)
+  {
+    List<Integer> lOffsets = getChordOffsets();
+    if (lOffsets.contains(xiNote))
+    {
+      return false;
+    }
+    else
+    {
+      return true;
+    }
+  }
 }
