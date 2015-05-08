@@ -6,6 +6,8 @@ import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiEvent;
 import javax.sound.midi.ShortMessage;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.dodgyjammers.jammypiece.events.ChordChangeEvent;
 import org.dodgyjammers.jammypiece.events.KeyChangeEvent;
 import org.dodgyjammers.jammypiece.events.RichMidiEvent;
@@ -17,11 +19,14 @@ import org.dodgyjammers.jammypiece.infra.MachineSpecificConfiguration;
 import org.dodgyjammers.jammypiece.infra.MachineSpecificConfiguration.CfgItem;
 import org.dodgyjammers.jammypiece.infra.Producer;
 import org.dodgyjammers.jammypiece.musickb.Chord;
+import org.dodgyjammers.jammypiece.musickb.HarmonyStyle;
 import org.dodgyjammers.jammypiece.musickb.Key;
 import org.dodgyjammers.jammypiece.musickb.TimeSignature;
 
 public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<RichMidiEvent>
 {
+  private static final Logger LOGGER = LogManager.getLogger();
+
   private final ChordListener mChordListener;
   private final MetronomeListener mMetronomeListener;
   private final KeyChangeListener mKeyChangeListener;
@@ -37,11 +42,9 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
   private int mNumBeats;
   private int mArpeggNum = 0;
   private int mSection;
-
-  private boolean mDuet = false;
-
-  private String[] mHarmonyStyle = new String[2];
   private int[] mStructure;
+  private final boolean mBassEnabled = MachineSpecificConfiguration.getCfgVal(CfgItem.HARMONY_BASS, false);
+  private final HarmonyStyle mHarmonyStyle;
 
   private volatile Key mKey;
 
@@ -66,8 +69,8 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
     mTimeSigListener = new TimeSignatureListener();
     mHarmonyChannel = MachineSpecificConfiguration.getCfgVal(CfgItem.CHORD_CHANNEL, 0);
     mBassChannel = MachineSpecificConfiguration.getCfgVal(CfgItem.BASS_CHANNEL, 0);
-    mHarmonyStyle[0] = MachineSpecificConfiguration.getCfgVal(CfgItem.HARMONY_STYLE_A, "STRUM");
-    mHarmonyStyle[1] = MachineSpecificConfiguration.getCfgVal(CfgItem.HARMONY_STYLE_B, "CHORDS");
+    String lHarmonyStyle = MachineSpecificConfiguration.getCfgVal(CfgItem.HARMONY_STYLE, "CHORDS");
+    mHarmonyStyle = HarmonyStyle.valueOf(lHarmonyStyle);
 
     xiMelodySource.registerConsumer(this);
     xiChordSource.registerConsumer(mChordListener);
@@ -86,31 +89,38 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
     }
 
     // From the current chord and the received event, find the closest duet note, below the melody.
-    if (mDuet)
+    if (mHarmonyStyle == HarmonyStyle.DUET)
     {
-      int lBestOffsetFromNote = 0;
-
-      int lNote = xiItem.getNote() % 12;
-      for (int lOffsetFromKey : mCurrentChord.getChordOffsets())
+      if (mNewChord == null)
       {
-        int lChordNote = (mKey.mTonicNoteNum + lOffsetFromKey) % 12;
-        int lOffsetFromNote = (lNote - lChordNote) % 12;
-        while (lOffsetFromNote < 1)
-        {
-          lOffsetFromNote += 12;
-        }
-        if (lOffsetFromNote > lBestOffsetFromNote)
-        {
-          lBestOffsetFromNote = lOffsetFromNote;
-        }
+        LOGGER.warn("Can't duet without a chord");
       }
+      else
+      {
+        int lBestOffsetFromNote = 0;
 
-      // Create a matching event.
-      byte[] lMessageBytes = xiItem.getMessage().getMessage();
-      lMessageBytes[1] += (lBestOffsetFromNote - 12);
-      MidiEvent lEvent = new MidiEvent(new ShortMessage(lMessageBytes[0], lMessageBytes[1], lMessageBytes[2]),
-                                       xiItem.getTick());
-      distribute(new RichMidiEvent(lEvent));
+        int lNote = xiItem.getNote() % 12;
+        for (int lOffsetFromKey : mNewChord.getChordOffsets())
+        {
+          int lChordNote = (mKey.mTonicNoteNum + lOffsetFromKey) % 12;
+          int lOffsetFromNote = (lNote - lChordNote) % 12;
+          while (lOffsetFromNote < 1)
+          {
+            lOffsetFromNote += 12;
+          }
+          if (lOffsetFromNote > lBestOffsetFromNote)
+          {
+            lBestOffsetFromNote = lOffsetFromNote;
+          }
+        }
+
+        // Create a matching event.
+        byte[] lMessageBytes = xiItem.getMessage().getMessage();
+        lMessageBytes[1] += (lBestOffsetFromNote - 12);
+        MidiEvent lEvent = new MidiEvent(new ShortMessage(lMessageBytes[0], lMessageBytes[1], lMessageBytes[2]),
+                                         xiItem.getTick());
+        distribute(new RichMidiEvent(lEvent));
+      }
     }
   }
 
@@ -120,6 +130,7 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
     @Override
     public void consume(ChordChangeEvent xiItem)
     {
+      LOGGER.info("Received chord change event");
       mNewChord = xiItem.mChord;
       mSection = xiItem.mSection;
       mStructure = xiItem.mStructure;
@@ -131,7 +142,7 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
     @Override
     public void consume(TickEvent xiItem)
     {
-      if(xiItem.mTickInBeat == 0)
+      if (mBassEnabled && (xiItem.mTickInBeat == 0))
       {
         playNewBassNote();
       }
@@ -143,14 +154,17 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
 
   public void playNewBassNote()
   {
-    if (mCurrentChord != null)
+    if (mBassEnabled)
     {
-      int lCurrentBassNote = getPlayableBass(mCurrentChord);
-      distribute(RichMidiEvent.makeNoteOff(mBassChannel, lCurrentBassNote));
-    }
+      if (mCurrentChord != null)
+      {
+        int lCurrentBassNote = getPlayableBass(mCurrentChord);
+        distribute(RichMidiEvent.makeNoteOff(mBassChannel, lCurrentBassNote));
+      }
 
-    int lNewBassNote = getPlayableBass(mNewChord);
-    distribute(RichMidiEvent.makeNoteOn(mBassChannel, lNewBassNote));
+      int lNewBassNote = getPlayableBass(mNewChord);
+      distribute(RichMidiEvent.makeNoteOn(mBassChannel, lNewBassNote));
+    }
   }
 
   public void playNewChord()
@@ -256,28 +270,27 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
 
   private void playHarmony(int xiSection, TickEvent xiItem)
   {
-    String lStyle = mHarmonyStyle[mStructure[mSection] - 1];
-
-    mDuet = false;
-
-    switch(lStyle)
+    switch (mHarmonyStyle)
     {
-      case "CHORDS":
+      case CHORDS:
         if(xiItem.mStress)
         {
           playNewChord();
         }
         break;
-      case "ARPEGGIO":
+
+      case ARPEGGIO:
         if(xiItem.mTickInBeat == 0)
         {
           arpeggiation();
         }
         break;
-      case "DUET":
-        mDuet = true;
+
+      case DUET:
+        // Do nothing.  We produce harmony on receipt of melody events.
         break;
-      case "STRUM":
+
+      case STRUM:
         strum(xiItem);
         break;
     }

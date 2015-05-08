@@ -56,7 +56,7 @@ public class MidiOut implements Consumer<RichMidiEvent>
       {
         LOGGER.info("Found rx device: " + lDeviceStr);
 
-        if ((lConfiguredDeviceStr != null) && (lConfiguredDeviceStr.equals(lDeviceStr)))
+        if ((lConfiguredDeviceStr != null) && (lDeviceStr.contains(lConfiguredDeviceStr)))
         {
           lDevice = lTmpDevice;
           lMidiOut = lDevice.getReceiver();

@@ -50,7 +50,7 @@ public class MidiIn extends Distributor<RichMidiEvent> implements Receiver
       {
         LOGGER.info("Found tx device: " + lDeviceStr);
 
-        if ((lConfiguredDeviceStr != null) && (lConfiguredDeviceStr.equals(lDeviceStr)))
+        if ((lConfiguredDeviceStr != null) && (lDeviceStr.contains(lConfiguredDeviceStr)))
         {
           lDevice = lTmpDevice;
           lMidiIn = lDevice.getTransmitter();
