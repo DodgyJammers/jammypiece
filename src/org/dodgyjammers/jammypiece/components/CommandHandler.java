@@ -18,17 +18,20 @@ public class CommandHandler extends Distributor<RichMidiEvent> implements Consum
     if ("".equals(xiItem))
     {
       LOGGER.warn("PANIC!");
-      for (int i = 0; i < 16; i++) {
-        // This is intended to turn all notes off in all channels. It doesn't
-        // seem to do anything though.
-        distribute(new RichMidiEvent(new ShortMessage(ShortMessage.CONTROL_CHANGE, i, 0x78, 0x00), -1));
-      }
+      allNotesOff();
     }
     else if ("quit".equals(xiItem))
     {
       LOGGER.warn("QUIT");
+      allNotesOff();
       jammypiece.quit();
     }
   }
-  
+
+  private void allNotesOff() throws Exception
+  {
+    for (int i = 0; i < 16; i++) {
+      distribute(new RichMidiEvent(new ShortMessage(ShortMessage.CONTROL_CHANGE, i, 0x78, 0x00), -1));
+    }
+  }
 }
