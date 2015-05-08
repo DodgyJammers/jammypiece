@@ -108,7 +108,7 @@ public class ChordMap
     {
       // Add variations to the existing groups.
       CHORD_I.addVariation(new Chord(0, Chord.Variation.M2));
-      CHORD_I.addVariation(new Chord(0, Chord.Variation.M6));
+      CHORD_I.addVariation(new Chord(0, Chord.Variation.v6));
       CHORD_I.addVariation(new Chord(0, Chord.Variation.M7));
       CHORD_I.addVariation(new Chord(0, Chord.Variation.M9));
       CHORD_I.addVariation(new Chord(0, Chord.Variation.SUS));
@@ -118,13 +118,13 @@ public class ChordMap
 
       CHORD_iii.addVariation(new Chord(4, Chord.Variation.m7));
 
-      CHORD_IV.addVariation(new Chord(5, Chord.Variation.M6));
+      CHORD_IV.addVariation(new Chord(5, Chord.Variation.v6));
       CHORD_IV.addVariation(new Chord(5, Chord.Variation.M7));
 
-      CHORD_V.addVariation(new Chord(7, Chord.Variation.M7));
-      CHORD_V.addVariation(new Chord(7, Chord.Variation.M9));
-      CHORD_V.addVariation(new Chord(7, Chord.Variation.M11));
-      CHORD_V.addVariation(new Chord(7, Chord.Variation.M13));
+      CHORD_V.addVariation(new Chord(7, Chord.Variation.v7));
+      CHORD_V.addVariation(new Chord(7, Chord.Variation.v9));
+      CHORD_V.addVariation(new Chord(7, Chord.Variation.v11));
+      CHORD_V.addVariation(new Chord(7, Chord.Variation.v13));
       CHORD_V.addVariation(new Chord(7, Chord.Variation.SUS));
     }
   }

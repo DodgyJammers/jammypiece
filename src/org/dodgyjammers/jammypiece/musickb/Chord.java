@@ -49,7 +49,7 @@ public class Chord
 
   public static enum Variation
   {
-    NONE, M2, M6, M7, M9, M11, M13, m6, m7, m9, SUS;
+    NONE, M2, v6, M7, M9, v7, v9, v11, v13, m7, m9, SUS;
   }
 
   /**
@@ -129,46 +129,52 @@ public class Chord
       case NONE: break;
 
       case M2:
-        lChordOffsets.add(lRoot+14);
+        // Add the 9th (but without the 7th).
+        lChordOffsets.add(lRoot + 14);
         break;
 
-      case M6:
+      case v6:
+        lChordOffsets.add(lRoot + 9);
         break;
 
       case M7:
-        lChordOffsets.add(lRoot+10);
+        lChordOffsets.add(lRoot + 11);
         break;
 
       case M9:
-        lChordOffsets.add(lRoot+10);
-        lChordOffsets.add(lRoot+14);
+        lChordOffsets.add(lRoot + 11);
+        lChordOffsets.add(lRoot + 14);
         break;
 
-      case M11:
-        lChordOffsets.add(lRoot+10);
-        lChordOffsets.add(lRoot+17);
-        break;
-
-      case M13:
-        lChordOffsets.add(lRoot+10);
-        lChordOffsets.add(lRoot+17);
-        lChordOffsets.add(lRoot+21);
-        break;
-
-      case m6:
-        break;
-
+      case v7:
       case m7:
+        lChordOffsets.add(lRoot + 10);
         break;
 
+      case v9:
       case m9:
+        lChordOffsets.add(lRoot + 10);
+        lChordOffsets.add(lRoot + 14);
+        break;
+
+      case v11:
+        lChordOffsets.add(lRoot + 10);
+        lChordOffsets.add(lRoot + 14);
+        lChordOffsets.add(lRoot + 17);
+        break;
+
+      case v13:
+        lChordOffsets.add(lRoot + 10);
+        lChordOffsets.add(lRoot + 14);
+        lChordOffsets.add(lRoot + 17);
+        lChordOffsets.add(lRoot + 21);
         break;
 
       case SUS:
-        // !! ARR Suspended chords need to remove the third and add the fourth instead.
-        break;
-
-      default:
+        // Remove the 3rd and insert the 4th.
+        assert(mMajor) : "No such thing as a minor suspended chord";
+        lChordOffsets.remove(lRoot + 4);
+        lChordOffsets.add(lRoot + 5, 1);
         break;
     }
 
