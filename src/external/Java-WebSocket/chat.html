@@ -24,6 +24,8 @@
       "Clicker": 6,
       "MidiOut": 6
     };
+    var scrollLock;
+
     var taCount = 6;
         document.observe("dom:loaded", function() {
             function log(text) {
@@ -35,8 +37,9 @@
                   i = 1;
                 }
                 var ta = $("log" + i);
+                var pos = ta.scrollTop;
                 ta.value = ta.value + (!Object.isUndefined(text) && text !== null ? text : "null");
-                ta.scrollTop = ta.scrollHeight
+                ta.scrollTop = scrollLock ? pos : ta.scrollHeight;
             }
 
             function handleMessage(msg) {
@@ -103,6 +106,10 @@
               }
             });
 
+            $("scrollLock").observe("change", function(e) {
+              scrollLock = $("scrollLock").checked;
+            });
+
             $("disconnect").observe("click", function(e) {
                 e.stop();
                 if (ws) {
@@ -117,6 +124,7 @@
       <table><tr>
       <td><form id="uriForm"><input type="text" id="uri" value="ws://localhost:8887" style="width:200px;"> <input type="submit" id="connect" value="Connect"><input type="button" id="disconnect" value="Disconnect" disabled="disabled"></form>
       <td><form id="sendForm"><input type="text" id="textField" value="" style="width:200px;"> <input type="submit" value="Send"><input type="button" id="clear" value="Clear"></form>
+      <td><form id="miscForm"><input type="checkbox" value="" id="scrollLock"> Scroll Lock</form>
       </table>
       <textarea id="log1" rows="30" cols="100"></textarea>
       <textarea id="log2" rows="30" cols="100"></textarea>
