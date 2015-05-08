@@ -62,6 +62,11 @@ public class MachineSpecificConfiguration
     CHORD_CHANNEL,
     EXTRA_MELODY_CHANNEL,
     DRUM_CHANNEL,
+
+    /**
+     * Whether to add complex chord progressions.
+     */
+    COMPLEX_CHORDS,
   }
 
   private static final Properties MACHINE_PROPERTIES = new Properties();
