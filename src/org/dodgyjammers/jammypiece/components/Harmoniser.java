@@ -66,7 +66,7 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
     mTimeSigListener = new TimeSignatureListener();
     mHarmonyChannel = MachineSpecificConfiguration.getCfgVal(CfgItem.CHORD_CHANNEL, 0);
     mBassChannel = MachineSpecificConfiguration.getCfgVal(CfgItem.BASS_CHANNEL, 0);
-    mHarmonyStyle[0] = MachineSpecificConfiguration.getCfgVal(CfgItem.HARMONY_STYLE_A, "ARPEGGIO");
+    mHarmonyStyle[0] = MachineSpecificConfiguration.getCfgVal(CfgItem.HARMONY_STYLE_A, "STRUM");
     mHarmonyStyle[1] = MachineSpecificConfiguration.getCfgVal(CfgItem.HARMONY_STYLE_B, "CHORDS");
 
     xiMelodySource.registerConsumer(this);
@@ -216,7 +216,21 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
       mArpeggNum = 0;
       arpeggiation();
     }
+  }
 
+  private void strum(TickEvent xiItem)
+  {
+    if (mCurrentChord != null && xiItem.mStress)
+    {
+      stopChord(mCurrentChord, mHarmonyChannel);
+    }
+
+    int lTickInBeat = xiItem.mTickInBeat;
+    int[] lNote = getNotes(mNewChord);
+    if(lTickInBeat < lNote.length)
+    {
+      distribute(RichMidiEvent.makeNoteOn(mHarmonyChannel, lNote[lTickInBeat]));
+    }
   }
 
   private class TimeSignatureListener implements Consumer<TimeSignatureChangeEvent>
@@ -267,6 +281,9 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
         break;
       case "DUET":
         mDuet = true;
+        break;
+      case "STRUM":
+        strum(xiItem);
         break;
     }
   }

@@ -22,7 +22,7 @@
       "Harmoniser": 4,
       "MelodyAdjuster": 5,
       "Clicker": 6,
-      "MidiOut": 6
+      "MidiOut": 3
     };
     var scrollLock;
 
@@ -83,7 +83,8 @@
               }
             }
 
-            setInterval(tryConnect, 2000);
+// Seems to cause backoff inside Firefox; don't do this (sadly).
+//            setInterval(tryConnect, 2000);
 
             $("uriForm").observe("submit", function(e) {
                 e.stop();
