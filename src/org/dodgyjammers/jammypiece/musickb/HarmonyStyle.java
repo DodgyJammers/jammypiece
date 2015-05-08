@@ -4,7 +4,8 @@ public enum HarmonyStyle
 {
   ARPEGGIO,
   DUET,
-  CHORDS;
+  CHORDS,
+  STRUM;
 }
 
 

@@ -17,6 +17,7 @@ import org.dodgyjammers.jammypiece.infra.MachineSpecificConfiguration;
 import org.dodgyjammers.jammypiece.infra.MachineSpecificConfiguration.CfgItem;
 import org.dodgyjammers.jammypiece.infra.Producer;
 import org.dodgyjammers.jammypiece.musickb.Chord;
+import org.dodgyjammers.jammypiece.musickb.HarmonyStyle;
 import org.dodgyjammers.jammypiece.musickb.Key;
 import org.dodgyjammers.jammypiece.musickb.TimeSignature;
 
@@ -37,11 +38,9 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
   private int mNumBeats;
   private int mArpeggNum = 0;
   private int mSection;
-
-  private boolean mDuet = false;
-
-  private String[] mHarmonyStyle = new String[2];
   private int[] mStructure;
+  private final boolean mBassEnabled = MachineSpecificConfiguration.getCfgVal(CfgItem.HARMONY_BASS, false);
+  private final HarmonyStyle mHarmonyStyle;
 
   private volatile Key mKey;
 
@@ -66,8 +65,8 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
     mTimeSigListener = new TimeSignatureListener();
     mHarmonyChannel = MachineSpecificConfiguration.getCfgVal(CfgItem.CHORD_CHANNEL, 0);
     mBassChannel = MachineSpecificConfiguration.getCfgVal(CfgItem.BASS_CHANNEL, 0);
-    mHarmonyStyle[0] = MachineSpecificConfiguration.getCfgVal(CfgItem.HARMONY_STYLE_A, "STRUM");
-    mHarmonyStyle[1] = MachineSpecificConfiguration.getCfgVal(CfgItem.HARMONY_STYLE_B, "CHORDS");
+    String lHarmonyStyle = MachineSpecificConfiguration.getCfgVal(CfgItem.HARMONY_STYLE, "DUET");
+    mHarmonyStyle = HarmonyStyle.valueOf(lHarmonyStyle);
 
     xiMelodySource.registerConsumer(this);
     xiChordSource.registerConsumer(mChordListener);
@@ -86,12 +85,12 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
     }
 
     // From the current chord and the received event, find the closest duet note, below the melody.
-    if (mDuet)
+    if ((mHarmonyStyle == HarmonyStyle.DUET) && (mNewChord != null))
     {
       int lBestOffsetFromNote = 0;
 
       int lNote = xiItem.getNote() % 12;
-      for (int lOffsetFromKey : mCurrentChord.getChordOffsets())
+      for (int lOffsetFromKey : mNewChord.getChordOffsets())
       {
         int lChordNote = (mKey.mTonicNoteNum + lOffsetFromKey) % 12;
         int lOffsetFromNote = (lNote - lChordNote) % 12;
@@ -131,7 +130,7 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
     @Override
     public void consume(TickEvent xiItem)
     {
-      if(xiItem.mTickInBeat == 0)
+      if (mBassEnabled && (xiItem.mTickInBeat == 0))
       {
         playNewBassNote();
       }
@@ -143,14 +142,17 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
 
   public void playNewBassNote()
   {
-    if (mCurrentChord != null)
+    if (mBassEnabled)
     {
-      int lCurrentBassNote = getPlayableBass(mCurrentChord);
-      distribute(RichMidiEvent.makeNoteOff(mBassChannel, lCurrentBassNote));
-    }
+      if (mCurrentChord != null)
+      {
+        int lCurrentBassNote = getPlayableBass(mCurrentChord);
+        distribute(RichMidiEvent.makeNoteOff(mBassChannel, lCurrentBassNote));
+      }
 
-    int lNewBassNote = getPlayableBass(mNewChord);
-    distribute(RichMidiEvent.makeNoteOn(mBassChannel, lNewBassNote));
+      int lNewBassNote = getPlayableBass(mNewChord);
+      distribute(RichMidiEvent.makeNoteOn(mBassChannel, lNewBassNote));
+    }
   }
 
   public void playNewChord()
@@ -255,34 +257,27 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
 
   private void playHarmony(int xiSection, TickEvent xiItem)
   {
-    String lStyle;
-
-    lStyle = "CHORDS";
-    if (mStructure != null)
+    switch (mHarmonyStyle)
     {
-      lStyle = mHarmonyStyle[mStructure[mSection] - 1];
-    }
-
-    mDuet = false;
-
-    switch(lStyle)
-    {
-      case "CHORDS":
+      case CHORDS:
         if(xiItem.mStress)
         {
           playNewChord();
         }
         break;
-      case "ARPEGGIO":
+
+      case ARPEGGIO:
         if(xiItem.mTickInBeat == 0)
         {
           arpeggiation();
         }
         break;
-      case "DUET":
-        mDuet = true;
+
+      case DUET:
+        // Do nothing.  We produce harmony on receipt of melody events.
         break;
-      case "STRUM":
+
+      case STRUM:
         strum(xiItem);
         break;
     }

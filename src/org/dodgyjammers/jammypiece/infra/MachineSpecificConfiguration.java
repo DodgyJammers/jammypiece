@@ -69,14 +69,10 @@ public class MachineSpecificConfiguration
     COMPLEX_CHORDS,
 
     /**
-     * The style of harmony to accompany the solo in A Blocks.
+     * The style of harmony.
      */
-    HARMONY_STYLE_A,
-
-    /**
-     * The style of harmony to accompany the solo in B Blocks.
-     */
-    HARMONY_STYLE_B,
+    HARMONY_BASS,
+    HARMONY_STYLE,
   }
 
   private static String sComputerName;
@@ -89,7 +85,7 @@ public class MachineSpecificConfiguration
       sComputerName = System.getenv("HOSTNAME");
     }
   }
-  
+
   private static final Properties MACHINE_PROPERTIES = new Properties();
   static
   {
@@ -124,7 +120,7 @@ public class MachineSpecificConfiguration
   public static String getMachineName() {
     return sComputerName;
   }
-  
+
   /**
    * @return the specified integer configuration value, or the default if not configured.
    *
