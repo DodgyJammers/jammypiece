@@ -137,6 +137,7 @@ public class Chord
     if ((mFlags & CHORD_SUS) != 0)
     {
       lChordOffsets.add(lRoot+11);
+      // !! ARR No.  Suspended chords needs to remove the third and add the fourth instead.
     }
 
     int lInversion = mInversion;

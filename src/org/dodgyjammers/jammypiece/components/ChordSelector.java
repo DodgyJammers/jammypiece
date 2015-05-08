@@ -49,15 +49,15 @@ public class ChordSelector extends Distributor<ChordChangeEvent> implements Cons
       // For now, amuse Chris by changing the chord each bar.
       if (xiTick.mStress)
       {
-        //Pass a chord to the harmoniser
+        // Pass a chord to the harmoniser
         if (mPlayTonicNext)
         {
-          distribute(new ChordChangeEvent(new Chord(1, 0, true, 0)));
+          distribute(new ChordChangeEvent(Chord.CHORD_I));
           mPlayTonicNext = false;
         }
         else
         {
-          distribute(new ChordChangeEvent(new Chord(5, 0, true, 0)));
+          distribute(new ChordChangeEvent(Chord.CHORD_V));
           mPlayTonicNext = true;
         }
       }
