@@ -53,7 +53,7 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
     @Override
     public void consume(ChordChangeEvent xiItem)
     {
-      mNewChord = getChord(xiItem);
+      mNewChord = xiItem.mChord;
     }
   }
 

@@ -90,4 +90,11 @@ public class Chord
 
 	return lNote;
   }
+  
+  public int[] noteOffset()
+  {
+	int [] lnoteOffset = new int[0];
+	
+	return lnoteOffset;
+  }
 }
