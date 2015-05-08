@@ -6,6 +6,7 @@ import org.dodgyjammers.jammypiece.events.ChordChangeEvent;
 import org.dodgyjammers.jammypiece.events.KeyChangeEvent;
 import org.dodgyjammers.jammypiece.events.RichMidiEvent;
 import org.dodgyjammers.jammypiece.events.TickEvent;
+import org.dodgyjammers.jammypiece.events.TimeSignatureChangeEvent;
 import org.dodgyjammers.jammypiece.infra.Consumer;
 import org.dodgyjammers.jammypiece.infra.Distributor;
 import org.dodgyjammers.jammypiece.infra.MachineSpecificConfiguration;
@@ -13,12 +14,16 @@ import org.dodgyjammers.jammypiece.infra.MachineSpecificConfiguration.CfgItem;
 import org.dodgyjammers.jammypiece.infra.Producer;
 import org.dodgyjammers.jammypiece.musickb.Chord;
 import org.dodgyjammers.jammypiece.musickb.Key;
+import org.dodgyjammers.jammypiece.musickb.TimeSignature;
 
 public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<RichMidiEvent>
 {
   private final ChordListener mChordListener;
   private final MetronomeListener mMetronomeListener;
   private final KeyChangeListener mKeyChangeListener;
+  private final TimeSignatureListener mTimeSigListener;
+
+  private TimeSignature mTimeSignature;
 
   private Chord mCurrentChord;
   private Chord mNewChord;
@@ -35,15 +40,18 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
    * @param xiChordSource
    * @param xiKeyDetector
    * @param xiMetronome
+   * @param xiTimeSigDetector
    */
   public Harmoniser(Producer<RichMidiEvent> xiMelodySource,
                     Producer<ChordChangeEvent> xiChordSource,
                     Producer<KeyChangeEvent> xiKeyDetector,
-                    Producer<TickEvent> xiMetronome)
+                    Producer<TickEvent> xiMetronome,
+                    Producer<TimeSignatureChangeEvent> xiTimeSigDetector)
   {
     mChordListener = new ChordListener();
     mKeyChangeListener = new KeyChangeListener();
     mMetronomeListener = new MetronomeListener();
+    mTimeSigListener = new TimeSignatureListener();
     mHarmonyChannel = MachineSpecificConfiguration.getCfgVal(CfgItem.CHORD_CHANNEL, 0);
     mBassChannel = MachineSpecificConfiguration.getCfgVal(CfgItem.BASS_CHANNEL, 0);
 
@@ -51,6 +59,7 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
     xiChordSource.registerConsumer(mChordListener);
     xiKeyDetector.registerConsumer(mKeyChangeListener);
     xiMetronome.registerConsumer(mMetronomeListener);
+    xiTimeSigDetector.registerConsumer(mTimeSigListener);
   }
 
   @Override
@@ -152,5 +161,15 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
   private void arpeggiation()
   {
 
+  }
+
+  private class TimeSignatureListener implements Consumer<TimeSignatureChangeEvent>
+  {
+    @SuppressWarnings("synthetic-access")
+    @Override
+    public void consume(TimeSignatureChangeEvent xiEvent) throws Exception
+    {
+      mTimeSignature = xiEvent.mTimeSignature;
+    }
   }
 }
