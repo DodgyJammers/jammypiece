@@ -48,6 +48,9 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
 
   private volatile Key mKey;
 
+  private int[] mCurrentNotes;
+  private int[] mNewNotes;
+
   /**
    * Produces a harmony based on the chord selected and the soloist's MIDI
    * events.
@@ -131,10 +134,11 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
     public void consume(ChordChangeEvent xiItem)
     {
       LOGGER.info("Received chord change event");
-      mNewChord = xiItem.mChord;
+      Chord lNewChord = xiItem.mChord;
       mSection = xiItem.mSection;
       mStructure = xiItem.mStructure;
       mKey = xiItem.mCurrentKey;
+      mNewNotes = getNotes(lNewChord);
 
       switch (mHarmonyStyle)
       {
@@ -182,19 +186,20 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
   {
     if (mCurrentChord != null)
     {
-      stopChord(mCurrentChord, mHarmonyChannel);
+      stopChord(mCurrentNotes, mHarmonyChannel);
     }
 
 	  //iterate over the notes in the new chord and play them all (for now at once
     // and at the same noise.
     //
     // Play some variation of the new harmony
-    for(int note: getNotes(mNewChord))
+    for(int note: mNewNotes)
     {
 	    distribute(RichMidiEvent.makeNoteOn(mHarmonyChannel, note));
     }
 
 	  mCurrentChord = mNewChord;
+	  mCurrentNotes = getNotes(mCurrentChord);
   }
 
   private int[] getNotes(Chord xiChord)
@@ -232,7 +237,7 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
     {
       if (mCurrentChord != null)
       {
-        stopChord(mCurrentChord, mHarmonyChannel);
+        stopChord(mCurrentNotes, mHarmonyChannel);
       }
       distribute(RichMidiEvent.makeNoteOn(mHarmonyChannel, lNotes[mArpeggNum]));
       mArpeggNum = mArpeggNum + 1;
@@ -248,7 +253,7 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
   {
     if (mCurrentChord != null && xiItem.mStress)
     {
-      stopChord(mCurrentChord, mHarmonyChannel);
+      stopChord(mCurrentNotes, mHarmonyChannel);
     }
 
     int lTickInBeat = xiItem.mTickInBeat;
@@ -270,10 +275,10 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
     }
   }
 
-  private void stopChord(Chord xiChord,int xiChannel)
+  private void stopChord(int[] xiNotes,int xiChannel)
   {
     //iterate over the notes in the chord and stop them all.
-    for (int note: getNotes(xiChord))
+    for (int note: xiNotes)
     {
       distribute(RichMidiEvent.makeNoteOff(xiChannel, note));
     }
