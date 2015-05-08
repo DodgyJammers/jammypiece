@@ -16,6 +16,8 @@ public class ChordSelector extends Distributor<ChordChangeEvent> implements Cons
   private final MetronomeListener mMetronomeListener;
   private final ChordMap mChordMap;
 
+
+
   private volatile boolean mPlayTonicNext = true;
 
   public ChordSelector(Producer<RichMidiEvent> xiMelodySource,
