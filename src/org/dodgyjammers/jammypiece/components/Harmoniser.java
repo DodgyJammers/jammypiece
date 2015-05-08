@@ -92,7 +92,7 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
         playNewBassNote();
       }
 
-      if (xiItem.mStress)
+      if (xiItem.mTickInBeat == 0)
       {
         arpeggiation();
       }
