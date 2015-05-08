@@ -134,6 +134,16 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
       mNewChord = xiItem.mChord;
       mSection = xiItem.mSection;
       mStructure = xiItem.mStructure;
+
+      switch (mHarmonyStyle)
+      {
+        case CHORDS:
+          if (mCurrentChord != mNewChord)
+          {
+            playNewChord();
+          }
+          break;
+      }
     }
   }
 
@@ -272,13 +282,6 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
   {
     switch (mHarmonyStyle)
     {
-      case CHORDS:
-        if(xiItem.mStress)
-        {
-          playNewChord();
-        }
-        break;
-
       case ARPEGGIO:
         if(xiItem.mTickInBeat == 0)
         {
