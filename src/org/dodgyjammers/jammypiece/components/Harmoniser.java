@@ -134,6 +134,7 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
       mNewChord = xiItem.mChord;
       mSection = xiItem.mSection;
       mStructure = xiItem.mStructure;
+      mKey = xiItem.mCurrentKey;
 
       switch (mHarmonyStyle)
       {
