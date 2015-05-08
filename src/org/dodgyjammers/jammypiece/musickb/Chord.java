@@ -18,9 +18,9 @@ public class Chord
   public final int mChordNum;
 
   /**
-   * The base note, as a note number from the key we're in - NOT from the chord that's being played.
+   * Chord inversion, 1, 2 or 3.
    */
-  public final int mBaseNoteNum;
+  public final int mInversion;
 
   /**
    * Whether the chord is major or minor.
@@ -47,7 +47,7 @@ public class Chord
    */
   public Chord(int xiChordNum)
   {
-    this(xiChordNum, xiChordNum, xiChordNum == 1 || xiChordNum == 4 || xiChordNum == 5, 0);
+    this(xiChordNum, 1, xiChordNum == 1 || xiChordNum == 4 || xiChordNum == 5, 0);
     assert(xiChordNum != 7);
   }
 
@@ -55,46 +55,78 @@ public class Chord
    * Create a chord.
    *
    * @param xiChordNum  - the chord number.
-   * @param xiBaseNoteNum - the offset from the chord to the bass note.
+   * @param xiInversion - the inversion for this chord: 1, 2 or 3.
    * @param xiMajor     - whether the chord is major (true) or minor (false).
    * @param xiFlags     - flags that modify the chord.
    */
-  public Chord(int xiChordNum, int xiBaseNoteNum, boolean xiMajor, int xiFlags)
+  public Chord(int xiChordNum, int xiInversion, boolean xiMajor, int xiFlags)
   {
     mChordNum = xiChordNum;
-    mBaseNoteNum = xiBaseNoteNum;
+    mInversion = xiInversion;
     mMajor = xiMajor;
     mFlags = xiFlags;
   }
 
   public int getRootOffset()
   {
-	switch (mChordNum)
-	{
-	  case 1: return 0;
-	  case 2: return 2;
-	  case 3: return 4;
-	  case 4: return 5;
-	  case 5: return 7;
-	  case 6: return 9;
-	}
+    switch (mChordNum)
+    {
+      case 1: return 0;
+      case 2: return 2;
+      case 3: return 4;
+      case 4: return 5;
+      case 5: return 7;
+      case 6: return 9;
+    }
 
-	throw new RuntimeException("Oops");
+    throw new RuntimeException("Oops");
   }
 
-  public int getBaseNote()
+  /*
+   * Return the offset in semitones from the key tonic note to the
+   * bass note of the chord.
+   */
+  public int getBassNote()
   {
-	int lNote = 0;
+    int [] lChordOffsets = getChordOffsets();
 
-	lNote = mBaseNoteNum;
+    assert(lChordOffsets.length > mInversion);
+    assert(mInversion != 0);
 
-	return lNote;
+    return lChordOffsets[mInversion];
   }
-  
-  public int[] noteOffset()
+
+  /*
+   * Return an array of offsets to the chord notes from the key tonic note.
+   */
+  public int[] getChordOffsets()
   {
-	int [] lnoteOffset = new int[0];
-	
-	return lnoteOffset;
+    int [] lChordOffsets;
+
+    int lRoot = getRootOffset();
+    if (mMajor)
+    {
+      lChordOffsets = new int[] {lRoot, lRoot+4, lRoot+7};
+    }
+    else
+    {
+      lChordOffsets = new int[] {lRoot, lRoot+3, lRoot+7};
+    }
+
+    return lChordOffsets;
+
+    //public final int mChordNum;  - Offset from key to first note in chord
+
+    //public final int mFlags;
+    //public static final int CHORD_7TH  = 0x01;
+    //public static final int CHORD_9TH  = 0x02;
+    //public static final int CHORD_11TH = 0x04;
+    //public static final int CHORD_13TH = 0x08;
+    //public static final int CHORD_SUS  = 0x10;
+
+    //public final int mInversion;
+
+    //public final boolean mMajor;
+
   }
 }

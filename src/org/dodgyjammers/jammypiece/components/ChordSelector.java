@@ -58,10 +58,7 @@ public class ChordSelector extends Distributor<ChordChangeEvent> implements Cons
           distribute(new ChordChangeEvent(new Chord(5, 0, true, 0)));
           mPlayTonicNext = true;
         }
-
       }
-
-      // Discard metronome events.
     }
   }
 
