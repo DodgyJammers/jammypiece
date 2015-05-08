@@ -24,12 +24,15 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
   private final TimeSignatureListener mTimeSigListener;
 
   private TimeSignature mTimeSignature;
+  private int mNumBeats;
 
   private Chord mCurrentChord;
   private Chord mNewChord;
 
   private int mHarmonyChannel;
   private int mBassChannel;
+
+  private int mArpeggNum =0;
 
   private volatile Key mKey;
 
@@ -86,11 +89,7 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
       if(xiItem.mTickInBeat == 0)
       {
         playNewBassNote();
-      }
-
-      if (xiItem.mStress)
-      {
-        playNewChord();
+        arpeggiation();
       }
     }
   }
@@ -111,11 +110,7 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
   {
     if (mCurrentChord != null)
     {
-      //iterate over the notes in the chord and stop them all.
-      for (int note: getNotes(mCurrentChord))
-      {
-        distribute(RichMidiEvent.makeNoteOff(mHarmonyChannel, note));
-      }
+      stopChord(mCurrentChord, mHarmonyChannel);
     }
 
 	  //iterate over the notes in the new chord and play them all (for now at once
@@ -160,6 +155,28 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
 
   private void arpeggiation()
   {
+    System.out.println(mNumBeats);
+    System.out.println(mArpeggNum);
+    if (mArpeggNum < mNumBeats)
+    {
+      System.out.println("Arpegg num is less than num beats");
+      if (mCurrentChord != null)
+      {
+        System.out.println("Stopping Current Chord");
+        stopChord(mCurrentChord, mHarmonyChannel);
+      }
+      System.out.println("Playing New Chord for:");
+      System.out.println(getNotes(mNewChord)[mArpeggNum]);
+      distribute(RichMidiEvent.makeNoteOn(mHarmonyChannel, getNotes(mNewChord)[mArpeggNum]));
+      System.out.println("incrementing arpegg num");
+      mArpeggNum = mArpeggNum + 1;
+    }
+    else
+    {
+      System.out.println("ArpeggNum is too high resetting to zero");
+      mArpeggNum = 0;
+      arpeggiation();
+    }
 
   }
 
@@ -170,6 +187,16 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
     public void consume(TimeSignatureChangeEvent xiEvent) throws Exception
     {
       mTimeSignature = xiEvent.mTimeSignature;
+      mNumBeats = mTimeSignature.mNumBeats;
+    }
+  }
+
+  private void stopChord(Chord xiChord,int xiChannel)
+  {
+    //iterate over the notes in the chord and stop them all.
+    for (int note: getNotes(xiChord))
+    {
+      distribute(RichMidiEvent.makeNoteOff(xiChannel, note));
     }
   }
 }

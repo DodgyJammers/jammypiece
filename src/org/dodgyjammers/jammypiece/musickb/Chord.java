@@ -43,15 +43,14 @@ public class Chord
   public final boolean mMajor;
 
   /**
-   * Modification flags.
+   * Chord variation.
    */
-  public final int mFlags;
+  public final Variation mVariation;
 
-  public static final int CHORD_7TH  = 0x01;
-  public static final int CHORD_9TH  = 0x02;
-  public static final int CHORD_11TH = 0x04;
-  public static final int CHORD_13TH = 0x08;
-  public static final int CHORD_SUS  = 0x10;
+  public static enum Variation
+  {
+    NONE, M2, v6, M7, M9, v7, v9, v11, v13, m7, m9, SUS;
+  }
 
   /**
    * Create a chord in root position with no specials.
@@ -60,7 +59,17 @@ public class Chord
    */
   public Chord(int xiChordNum)
   {
-    this(xiChordNum, 0, xiChordNum, xiChordNum == 0 || xiChordNum == 5 || xiChordNum == 7, 0);
+    this(xiChordNum, 0, xiChordNum, xiChordNum == 0 || xiChordNum == 5 || xiChordNum == 7, Variation.NONE);
+  }
+
+  /**
+   * Create a chord variation, in root position.
+   *
+   * @param xiChordNum - the chord number.
+   */
+  public Chord(int xiChordNum, Variation xiVariation)
+  {
+    this(xiChordNum, 0, xiChordNum, xiChordNum == 0 || xiChordNum == 5 || xiChordNum == 7, xiVariation);
   }
 
   /**
@@ -72,7 +81,7 @@ public class Chord
    * @param xiMajor     - whether the chord is major (true) or minor (false).
    * @param xiFlags     - flags that modify the chord.
    */
-  public Chord(int xiChordNum, int xiInversion, int xiBaseNoteNum, boolean xiMajor, int xiFlags)
+  public Chord(int xiChordNum, int xiInversion, int xiBaseNoteNum, boolean xiMajor, Variation xiVariation)
   {
     assert(xiChordNum > 11);
     assert(xiChordNum <= 11);
@@ -81,7 +90,7 @@ public class Chord
     mInversion = xiInversion;
     mBaseNoteNum = xiBaseNoteNum;
     mMajor = xiMajor;
-    mFlags = xiFlags;
+    mVariation = xiVariation;
   }
 
   /*
@@ -114,30 +123,59 @@ public class Chord
       lChordOffsets.add(lRoot+3);
       lChordOffsets.add(lRoot+7);
     }
-    if ((mFlags & CHORD_7TH) != 0)
+
+    switch(mVariation)
     {
-      lChordOffsets.add(lRoot+10);
-    }
-    if ((mFlags & CHORD_9TH) != 0)
-    {
-      lChordOffsets.add(lRoot+10);
-      lChordOffsets.add(lRoot+14);
-    }
-    if ((mFlags & CHORD_11TH) != 0)
-    {
-      lChordOffsets.add(lRoot+10);
-      lChordOffsets.add(lRoot+17);
-    }
-    if ((mFlags & CHORD_13TH) != 0)
-    {
-      lChordOffsets.add(lRoot+10);
-      lChordOffsets.add(lRoot+17);
-      lChordOffsets.add(lRoot+21);
-    }
-    if ((mFlags & CHORD_SUS) != 0)
-    {
-      lChordOffsets.add(lRoot+11);
-      // !! ARR No.  Suspended chords needs to remove the third and add the fourth instead.
+      case NONE: break;
+
+      case M2:
+        // Add the 9th (but without the 7th).
+        lChordOffsets.add(lRoot + 14);
+        break;
+
+      case v6:
+        lChordOffsets.add(lRoot + 9);
+        break;
+
+      case M7:
+        lChordOffsets.add(lRoot + 11);
+        break;
+
+      case M9:
+        lChordOffsets.add(lRoot + 11);
+        lChordOffsets.add(lRoot + 14);
+        break;
+
+      case v7:
+      case m7:
+        lChordOffsets.add(lRoot + 10);
+        break;
+
+      case v9:
+      case m9:
+        lChordOffsets.add(lRoot + 10);
+        lChordOffsets.add(lRoot + 14);
+        break;
+
+      case v11:
+        lChordOffsets.add(lRoot + 10);
+        lChordOffsets.add(lRoot + 14);
+        lChordOffsets.add(lRoot + 17);
+        break;
+
+      case v13:
+        lChordOffsets.add(lRoot + 10);
+        lChordOffsets.add(lRoot + 14);
+        lChordOffsets.add(lRoot + 17);
+        lChordOffsets.add(lRoot + 21);
+        break;
+
+      case SUS:
+        // Remove the 3rd and insert the 4th.
+        assert(mMajor) : "No such thing as a minor suspended chord";
+        lChordOffsets.remove(lRoot + 4);
+        lChordOffsets.add(lRoot + 5, 1);
+        break;
     }
 
     int lInversion = mInversion;
