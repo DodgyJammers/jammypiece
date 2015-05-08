@@ -1,5 +1,7 @@
 package org.dodgyjammers.jammypiece.events;
 
+import java.util.Arrays;
+
 import org.dodgyjammers.jammypiece.musickb.Chord;
 import org.dodgyjammers.jammypiece.musickb.Key;
 
@@ -20,7 +22,7 @@ public class ChordChangeEvent
   public final int [] mStructure;       // Song structure, ie 1,1,2,1
   public final int mSection;            // Index into the above array
 
-  public final int mSectionLength;      // Beats in the current section.
+  public final int mSectionLength;      // Beats (i.e., ticks with tickInBeat==0) in the current section.
   public final int mClicksTilSection;   // Expected time remaining in the
                                         // current section.
 
@@ -55,6 +57,13 @@ public class ChordChangeEvent
 
     mSectionLength = xiSectionLength;
     mClicksTilSection = xiClicksTilSection;
+  }
+  
+  @Override
+  public String toString() {
+    return mChord + "(->" + mClicksTilChord + ".." + mNextChord + ") in " + 
+           mCurrentKey + "(->" + mClicksTilKey + ".." + mNextKey + ") at " +
+           Arrays.toString(mStructure) + "(" + mSection + ") " + mSectionLength + "(.." + mClicksTilSection + ")";
   }
 }
 

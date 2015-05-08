@@ -33,4 +33,9 @@ public class TickEvent extends Event
     mTicksPerBeat = xiTicksPerBeat;
     mTickInBeat = xiTickInBeat;
   }
+  
+  @Override
+  public String toString() {
+    return (mStress ? "STRESS: " : "unstr:  ") + mTickInBeat + "/" + mTicksPerBeat;
+  }
 }

@@ -216,13 +216,14 @@ public class Harmoniser extends Distributor<RichMidiEvent> implements Consumer<R
 
   private void arpeggiation()
   {
-    if (mArpeggNum < mNumBeats)
+    int[] lNotes = getNotes(mNewChord);
+    if (mArpeggNum < lNotes.length)
     {
       if (mCurrentChord != null)
       {
         stopChord(mCurrentChord, mHarmonyChannel);
       }
-      distribute(RichMidiEvent.makeNoteOn(mHarmonyChannel, getNotes(mNewChord)[mArpeggNum]));
+      distribute(RichMidiEvent.makeNoteOn(mHarmonyChannel, lNotes[mArpeggNum]));
       mArpeggNum = mArpeggNum + 1;
     }
     else
