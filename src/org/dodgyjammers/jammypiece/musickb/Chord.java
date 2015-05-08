@@ -63,6 +63,16 @@ public class Chord
   }
 
   /**
+   * Create a chord variation, in root position.
+   *
+   * @param xiChordNum - the chord number.
+   */
+  public Chord(int xiChordNum, Variation xiVariation)
+  {
+    this(xiChordNum, 0, xiChordNum, xiChordNum == 0 || xiChordNum == 5 || xiChordNum == 7, xiVariation);
+  }
+
+  /**
    * Create a chord.
    *
    * @param xiChordNum  - the chord, as a chromatic offset from the key we're in.
