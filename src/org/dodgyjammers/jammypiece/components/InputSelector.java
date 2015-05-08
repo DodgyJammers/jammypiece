@@ -14,8 +14,10 @@ public class InputSelector extends Distributor<RichMidiEvent> implements Consume
 {
   public InputSelector(List<Producer<RichMidiEvent>> xiProducers)
   {
-    assert(xiProducers.size() == 1); // For now, only support a single producer
-    xiProducers.get(0).registerConsumer(this);
+    assert(xiProducers.size() <= 1); // For now, only support a single producer
+    if (xiProducers.size() == 1) {
+      xiProducers.get(0).registerConsumer(this);
+    }
   }
 
   @Override

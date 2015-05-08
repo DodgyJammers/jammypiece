@@ -54,15 +54,22 @@ public class jammypiece
       // Create all the components and join them up.
 
       Producer<RichMidiEvent> lSource;
-      if ("dummy".equals(MachineSpecificConfiguration.getCfgVal(CfgItem.MIDI_IN_DEVICE, null)))
+      String lSourceName = MachineSpecificConfiguration.getCfgVal(CfgItem.MIDI_IN_DEVICE, null);
+      List<Producer<RichMidiEvent>> lSources;
+      if ("dummy".equals(lSourceName))
       {
-        lSource = new DummyMidiSource();
+        lSources = Collections.singletonList((Producer<RichMidiEvent>)new DummyMidiSource());
+      }
+      else if ("null".equals(lSourceName))
+      {
+        lSources = Collections.emptyList(); 
       }
       else
       {
-        lSource = new MidiIn();
+        MidiIn lMidiIn = new MidiIn();
+        lSources = Collections.singletonList((Producer<RichMidiEvent>)lMidiIn);
+        lMidiIn.start();
       }
-      List<Producer<RichMidiEvent>> lSources = Collections.singletonList(lSource);
       Producer<RichMidiEvent> lInputSelector = new InputSelector(lSources);
       Producer<RichMidiEvent> lJunkFilter = new JunkFilter(lInputSelector);
       new MidiEventDumper(lJunkFilter, MidiIn.class.getName());
@@ -95,7 +102,6 @@ public class jammypiece
 
 
       // Start all the components that need to be started.
-      lSource.start();
       lMetronome.start();
       LOGGER.info("jammypiece started");
 
