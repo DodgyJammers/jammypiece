@@ -1,6 +1,7 @@
 package org.dodgyjammers.jammypiece.components;
 
 import javax.sound.midi.ShortMessage;
+import javax.sound.midi.SysexMessage;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -25,6 +26,12 @@ public class CommandHandler extends Distributor<RichMidiEvent> implements Consum
       LOGGER.warn("QUIT");
       allNotesOff();
       jammypiece.quit();
+    }
+    else if ("gm".equals(xiItem))
+    {
+      LOGGER.warn("GM - General MIDI on");
+      SysexMessage lgmon = new SysexMessage(new byte[]{ (byte)0xF0, 0x7E, 0x7F, 0x09, 0x01, (byte)0xF7 }, 6);
+      distribute(new RichMidiEvent(lgmon, -1));
     }
   }
 
