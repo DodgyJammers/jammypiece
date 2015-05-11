@@ -10,8 +10,8 @@
 
     <target name="build">
         <mkdir dir="out"/>
-        <javac srcdir="extsrc" destdir="out" classpathref="classpath"/>
-        <javac srcdir="src" destdir="out" classpathref="classpath"/>
+        <javac srcdir="extsrc" destdir="out" debug="true" classpathref="classpath"/>
+        <javac srcdir="src" destdir="out" debug="true" classpathref="classpath"/>
     </target>
 
     <target name="run">
