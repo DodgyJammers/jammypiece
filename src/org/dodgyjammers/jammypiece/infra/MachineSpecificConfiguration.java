@@ -60,6 +60,7 @@ public class MachineSpecificConfiguration
      */
     DRUMMER_ENABLED,
     DRUMMER_CHANNEL,
+    DRUMMER_PATTERN,
 
     /**
      * General channel configuration.
@@ -68,7 +69,6 @@ public class MachineSpecificConfiguration
     BASS_CHANNEL,
     CHORD_CHANNEL,
     EXTRA_MELODY_CHANNEL,
-    DRUM_CHANNEL,
 
     /**
      * Whether to add complex chord progressions.

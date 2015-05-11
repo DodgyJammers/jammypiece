@@ -82,7 +82,7 @@ public class jammypiece
       Producer<ChordChangeEvent> lChordSelector = new ChordSelector(lJunkFilter, lKeyDetector, lMetronome);
       Producer<RichMidiEvent> lAdjuster = new MelodyAdjuster(lJunkFilter, lChordSelector, lMetronome);
       Producer<RichMidiEvent> lHarmoniser = new Harmoniser(lAdjuster, lChordSelector, lKeyDetector, lMetronome, lTimeSigDetector);
-      Producer<RichMidiEvent> lDrummer = new Drummer(lMetronome, lChordSelector);
+      Drummer lDrummer = new Drummer(lMetronome, lChordSelector);
       new MidiEventDumper(lAdjuster, MelodyAdjuster.class.getName());
       new MidiEventDumper(lHarmoniser, Harmoniser.class.getName());
       new MidiEventDumper(lClicker, Clicker.class.getName());
