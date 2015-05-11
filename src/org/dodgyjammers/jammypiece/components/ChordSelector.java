@@ -31,6 +31,8 @@ public class ChordSelector extends Distributor<ChordChangeEvent> implements Cons
   private volatile ChordGroup mChordGroup;
   private volatile int mCurrentNote = 0;  // Pitch of current note - 0 means silence.
 
+  private volatile int mBeatCount = -1;
+
   public ChordSelector(Producer<RichMidiEvent> xiMelodySource,
                        Producer<KeyChangeEvent> xiKeySource,
                        Producer<TickEvent> xiMetronome)
@@ -63,6 +65,7 @@ public class ChordSelector extends Distributor<ChordChangeEvent> implements Cons
         // Note off
         mCurrentNote = 0;
       }
+      LOGGER.debug("mCurrentNote = " + mCurrentNote);
     }
   }
 
@@ -71,31 +74,48 @@ public class ChordSelector extends Distributor<ChordChangeEvent> implements Cons
    * mChordGroup appropriately.  Return true if anything changes,
    * false otherwise.
    */
-  boolean getNewChord(int lDirn, int lDist)
+  boolean getNewChord(int lDirn, int lDist, boolean xiPreferChange)
   {
     boolean lChanged = false;
 
-    LOGGER.debug("lDirn = " + lDirn + ", lDist = " + lDist);
-    ArrayList<ChordGroup> lCandidates = new ArrayList();
+    int lNote = 0;
+    if (mCurrentNote != 0)
+    {
+      lNote = mCurrentNote - mKey.mTonicNoteNum;
+      while (lNote <= 0)
+        lNote += 12;
+      LOGGER.debug("Current note: "+lNote);
+    }
+
     if (mChordGroup == null)
     {
       mChordGroup = mChordMap.getRoot();
       mChord = mChordGroup.mPrimaryChord;
       lChanged = true;
+      xiPreferChange = false;
       LOGGER.debug("Initialised mChordGroup to " + mChordGroup);
     }
+
+    if ((!xiPreferChange) && ((lNote == 0) || (lNote != 0) && (!mChord.clashes(lNote))))
+    {
+      LOGGER.debug("Leave chord alone");
+      return false;
+    }
+
+    LOGGER.debug("lDirn = " + lDirn + ", lDist = " + lDist);
+    ArrayList<ChordGroup> lCandidates = new ArrayList();
     for (ChordGroup lNeighbour: mChordGroup.mNeighbours)
     {
       // Abort if the neighbour is in the wrong direction
-      if ((lDirn == 0) &&
-          (lNeighbour.mShortestPathHome != mChordGroup.mShortestPathHome))
-        continue;
-      if ((lDirn == 1) &&
-          (lNeighbour.mShortestPathHome <= mChordGroup.mShortestPathHome))
-        continue;
-      if ((lDirn == -1) &&
-          (lNeighbour.mShortestPathHome >= mChordGroup.mShortestPathHome))
-        continue;
+      //if ((lDirn == 0) &&
+      //    (lNeighbour.mShortestPathHome != mChordGroup.mShortestPathHome))
+      //  continue;
+      //if ((lDirn == 1) &&
+      //    (lNeighbour.mShortestPathHome <= mChordGroup.mShortestPathHome))
+      //  continue;
+      //if ((lDirn == -1) &&
+      //    (lNeighbour.mShortestPathHome >= mChordGroup.mShortestPathHome))
+      //  continue;
 
       // Abort if the neighbour is too far away.
       if (lNeighbour.mShortestPathHome > lDist)
@@ -106,14 +126,6 @@ public class ChordSelector extends Distributor<ChordChangeEvent> implements Cons
 
     // Loop through the shuffled chord groups and variations, looking
     // for one that is compatible.
-    int lNote = 0;
-    if (mCurrentNote != 0)
-    {
-      lNote = mCurrentNote - mKey.mTonicNoteNum;
-      while (lNote <= 0)
-        lNote += 12;
-      LOGGER.debug("Current note: "+lNote);
-    }
     LOGGER.debug("Num candidate groups: "+lCandidates.size());
     if (lCandidates.size() != 0)
     {
@@ -123,6 +135,7 @@ public class ChordSelector extends Distributor<ChordChangeEvent> implements Cons
         ArrayList<Chord> lChords = new ArrayList<Chord>();
         lChords.addAll(lGroup.mVariations);
         Collections.shuffle(lChords);
+        lChords.add(0, lGroup.mPrimaryChord);
         for (Chord lChord: lChords)
         {
           // Move along if this note clashes
@@ -133,6 +146,7 @@ public class ChordSelector extends Distributor<ChordChangeEvent> implements Cons
 
           // Select this Chord
           mChordGroup = lGroup;
+          LOGGER.debug("New distance: "+lGroup.mShortestPathHome);
           mChord = lChord;
           lChanged = true;
           break;
@@ -154,6 +168,8 @@ public class ChordSelector extends Distributor<ChordChangeEvent> implements Cons
       return;
     }
 
+    mBeatCount++;
+
     // Update the song position.
     mSongStructure.consumeMetronome(xiTick);
 
@@ -161,7 +177,10 @@ public class ChordSelector extends Distributor<ChordChangeEvent> implements Cons
     // inputs for this.
     int lDirn = mSongStructure.getDirection();
     int lDist = mSongStructure.getMaxDist();
-    boolean lchanged = getNewChord(lDirn, lDist);
+
+    boolean lPreferChange = ((mBeatCount % 4) == 0);
+    LOGGER.debug("mBeatCount = " + mBeatCount + ", prefer change? " + lPreferChange);
+    boolean lchanged = getNewChord(lDirn, lDist, lPreferChange);
 
     if ((lchanged) || (xiTick.mStress))
     {
@@ -188,7 +207,7 @@ public class ChordSelector extends Distributor<ChordChangeEvent> implements Cons
       // We'll be consuming a metronome before being used for the first time,
       // so initialise as if as the end of a piece.
       mStructure = new int [] {1, 1, 2, 1};
-      mSection = 4;
+      mSection = 3;
       mSectionLength = 16;
       mBeatsLeftInSection = 1;
       mClicksPerBeat = 3;
@@ -210,9 +229,11 @@ public class ChordSelector extends Distributor<ChordChangeEvent> implements Cons
           {
             case 2:
               mKey = Key.valueOf("G_MAJOR");
+              LOGGER.info("Switch to dominant key");
               break;
             case 3:
               mKey = Key.valueOf("C_MAJOR");
+              LOGGER.info("Switch to home key");
               break;
             case 4:
               mSection = 0;
@@ -254,7 +275,8 @@ public class ChordSelector extends Distributor<ChordChangeEvent> implements Cons
       // 5 home
 
       // 4 tonic
-      int [] lBeatDirn = {0, 0, 1, 1, 1, 1, 1, -1, -1, -1, -1, -1, 0, 0, 0, 0};
+      //int [] lBeatDirn = {0, 0, 1, 1, 1, 1, 1, -1, -1, -1, -1, -1, 0, 0, 0, 0};
+      int [] lBeatDirn = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
       assert(mBeatsLeftInSection <= 16);
       return lBeatDirn[16 - mBeatsLeftInSection];
@@ -266,7 +288,7 @@ public class ChordSelector extends Distributor<ChordChangeEvent> implements Cons
      */
     public int getMaxDist()
     {
-      int [] lBeatDist = {0, 0, 5, 5, 5, 5, 5, 4, 3, 2, 1, 1, 0, 0, 0, 0};
+      int [] lBeatDist = {0, 0, 0, 0, 2, 2, 2, 2, 1, 1, 1, 1, 0, 0, 0, 0};
 
       assert(mBeatsLeftInSection <= 16);
       return lBeatDist[16 - mBeatsLeftInSection];

@@ -202,12 +202,12 @@ public class Chord
     List<Integer> lOffsets = getChordOffsets();
     if (lOffsets.contains(xiNote))
     {
-      LOGGER.info("Found clash");
+      LOGGER.info("Found compatible code");
       return false;
     }
     else
     {
-      LOGGER.info("Found compatible code");
+      LOGGER.info("Found clash");
       return true;
     }
   }
